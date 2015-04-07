@@ -27,7 +27,7 @@
 	        android:layout_alignLeft="@+id/section_label"
 	        android:layout_alignParentRight="true"
 	        android:layout_alignParentTop="true"
-	        android:text="@string/select_identity_description"
+	        android:text="@string/delete_identity_description"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
 	    
 	    <Spinner
@@ -36,7 +36,7 @@
 	        android:layout_height="wrap_content"
 	        android:layout_alignLeft="@+id/textView1"
 	        android:layout_below="@+id/textView1"
-	        android:contentDescription="@string/select_identity_description" />
+	        android:contentDescription="@string/delete_identity_description" />
 	    
 	    <EditText
 	        android:id="@+id/edit_text_new_user"

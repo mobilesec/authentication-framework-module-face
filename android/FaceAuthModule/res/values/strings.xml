@@ -26,7 +26,7 @@
     <string name="current_user">Current user: %1$s</string>
     <string name="session_id">01</string>
     <string name="reddot_description">Recording dot</string>
-    <string name="select_identity_description">Select identity</string>
+    <string name="delete_identity_description">Delete identity</string>
     <string name="invalid_username">Usernames must not contain "_" or "/"</string>
     <string name="radiobutton_training">Training</string>
     <string name="radiobutton_recognition">Recognition</string>
@@ -50,4 +50,6 @@
 	<string name="done">Done</string>
 	<string name="title_manage_data">Manage Face Authentication Data</string>
 	<string name="title_settings">Face Authentication Settings</string>
+	<string name="delete_identity">Delete identity</string>
+	<string name="create_identity">ALPHA STATE: manage face authentication data via file system manager! \n\nCreate identity</string>
 </resources>

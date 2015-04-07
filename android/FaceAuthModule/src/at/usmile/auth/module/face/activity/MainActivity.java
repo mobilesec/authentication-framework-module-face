@@ -9,6 +9,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
+import at.usmile.panshot.nu.FaceModuleUtil;
 
 /**
  * Entry point if user opens app to train or change settings (= if not called by
@@ -39,8 +40,19 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
+
+				// load users, don't switch Activities if impossible
+				if (!FaceModuleUtil.loadUsers(MainActivity.this)) {
+					return;
+				}
+
+				// ask for which user we're training
 				Toast.makeText(MainActivity.this, "TODO ask for user to train for here", Toast.LENGTH_SHORT).show();
-				// TODO trigger intent to camera activity with training here
+
+				// switch to face rec.
+				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
+				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_TRAINING);
+				startActivityForResult(i, REQUEST_CODE_MANAGE_DATA);
 			}
 		});
 		Button buttonManageData = (Button) findViewById(R.id.button_manage_data);
@@ -49,6 +61,7 @@ public class MainActivity extends Activity {
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonManageData#OnClickListener()");
 				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
+				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_RECOGNITION);
 				startActivityForResult(i, REQUEST_CODE_MANAGE_DATA);
 			}
 		});

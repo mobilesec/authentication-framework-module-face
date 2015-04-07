@@ -1,12 +1,8 @@
 package at.usmile.auth.module.face.activity;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import at.usmile.auth.module.face.R;
 
 /**
@@ -26,18 +22,6 @@ public class SettingsActivity extends Activity {
 		Log.d(TAG, "onCreate()");
 
 		setContentView(R.layout.layout_activity_face_settings);
-
-		Button buttonDone = (Button) findViewById(R.id.button_done);
-		buttonDone.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View _v) {
-				Log.d(TAG, "buttonDone#OnClickListener()");
-				Intent returnIntent = new Intent();
-				// returnIntent.putExtra("result", -1);
-				setResult(RESULT_OK, returnIntent);
-				finish();
-			}
-		});
 	}
 
 	@Override
