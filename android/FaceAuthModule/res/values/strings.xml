@@ -45,6 +45,9 @@
 	<string name="pca_features">Amount of PCA features</string>
 	<string name="no_faces_detected">No faces detected.</string>
 	<string name="trigger_training">Train face authentication</string>
-	<string name="manage_face_data">Manage authentication data</string>
+	<string name="manage_face_data">Manage face authentication data</string>
 	<string name="trigger_settings">Face authentication settings</string>
+	<string name="done">Done</string>
+	<string name="title_manage_data">Manage Face Authentication Data</string>
+	<string name="title_settings">Face Authentication Settings</string>
 </resources>

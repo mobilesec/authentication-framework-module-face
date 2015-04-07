@@ -1,4 +1,4 @@
-package at.usmile.auth.module.face;
+package at.usmile.panshot;
 
 import java.util.ArrayList;
 import java.util.Arrays;

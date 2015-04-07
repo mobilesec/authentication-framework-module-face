@@ -1,16 +1,31 @@
 package at.usmile.auth.module.face.activity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 
+/**
+ * Entry point if user opens app to train or change settings (= if not called by
+ * auth framework)
+ * 
+ * @author Rainhard Findling
+ * @date 7 Apr 2015
+ * @version 1
+ */
 public class MainActivity extends Activity {
 
-	private final String TAG = "MainActivity";
+	private static final String TAG = "MainActivity";
+
+	// Intent requst codes
+	private static final int REQUEST_CODE_MANAGE_DATA = 1;
+	private static final int REQUEST_CODE_SETTINGS = 2;
+	private static final int REQUEST_CODE_TRAIN = 3;
 
 	@Override
 	protected void onCreate(Bundle _savedInstanceState) {
@@ -24,6 +39,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
+				Toast.makeText(MainActivity.this, "TODO ask for user to train for here", Toast.LENGTH_SHORT).show();
 				// TODO trigger intent to camera activity with training here
 			}
 		});
@@ -32,7 +48,8 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonManageData#OnClickListener()");
-				// TODO trigger intent to data manage activity here
+				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
+				startActivityForResult(i, REQUEST_CODE_MANAGE_DATA);
 			}
 		});
 		Button buttonSettings = (Button) findViewById(R.id.button_settings);
@@ -40,9 +57,24 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonSettings#OnClickListener()");
-				// TODO trigger intent to settings here
+				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
+				startActivityForResult(i, REQUEST_CODE_SETTINGS);
 			}
 		});
+	}
+
+	@Override
+	protected void onActivityResult(int _requestCode, int _resultCode, Intent _data) {
+		switch (_requestCode) {
+			case REQUEST_CODE_MANAGE_DATA:
+				Log.d(TAG, "onActivityResult#requestCodeManageData");
+				// TODO
+				break;
+
+			default:
+				super.onActivityResult(_requestCode, _resultCode, _data);
+				break;
+		}
 	}
 
 	@Override

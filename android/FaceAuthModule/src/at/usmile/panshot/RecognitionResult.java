@@ -1,4 +1,4 @@
-package at.usmile.panshot.util;
+package at.usmile.panshot;
 
 import java.util.ArrayList;
 

@@ -14,8 +14,8 @@ import libsvm.svm_problem;
 import org.opencv.core.Mat;
 
 import android.util.Log;
-import at.usmile.auth.module.face.PanshotImage;
-import at.usmile.auth.module.face.User;
+import at.usmile.panshot.PanshotImage;
+import at.usmile.panshot.User;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.RecUtil;
 import at.usmile.panshot.recognition.TrainingData;

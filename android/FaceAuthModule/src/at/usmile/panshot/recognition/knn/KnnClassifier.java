@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import at.usmile.auth.module.face.PanshotImage;
-import at.usmile.auth.module.face.User;
+import at.usmile.panshot.PanshotImage;
+import at.usmile.panshot.User;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.TrainingData;
 import at.usmile.tuple.GenericTuple2;

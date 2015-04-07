@@ -9,9 +9,9 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import android.util.Log;
-import at.usmile.auth.module.face.PanshotImage;
 import at.usmile.functional.Fun;
 import at.usmile.functional.FunUtil;
+import at.usmile.panshot.PanshotImage;
 import at.usmile.tuple.GenericTuple3;
 
 public class PCAUtil {

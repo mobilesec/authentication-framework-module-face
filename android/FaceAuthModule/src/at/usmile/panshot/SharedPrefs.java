@@ -1,4 +1,4 @@
-package at.usmile.auth.module.face;
+package at.usmile.panshot;
 
 import android.content.Context;
 import at.usmile.auth.module.face.activity.OldMainActivity.RecognitionType;

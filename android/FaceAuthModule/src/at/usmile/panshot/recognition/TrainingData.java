@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.opencv.core.Mat;
 
-import at.usmile.auth.module.face.PanshotImage;
+import at.usmile.panshot.PanshotImage;
 
 public class TrainingData {
 

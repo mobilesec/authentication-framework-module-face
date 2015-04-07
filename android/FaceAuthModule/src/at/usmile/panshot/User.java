@@ -1,4 +1,4 @@
-package at.usmile.auth.module.face;
+package at.usmile.panshot;
 
 public class User {
 
