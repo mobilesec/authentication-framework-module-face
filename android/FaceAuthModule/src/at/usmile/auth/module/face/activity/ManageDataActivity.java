@@ -44,6 +44,7 @@ public class ManageDataActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(ManageDataActivity.class.getSimpleName(), "buttonNewUser.setOnClickListener()");
+				Log.d(ManageDataActivity.class.getSimpleName(), "create user " + edittextNewUser.getText());
 			}
 		});
 

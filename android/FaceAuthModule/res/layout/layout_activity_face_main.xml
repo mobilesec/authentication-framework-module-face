@@ -9,6 +9,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/trigger_training" />
+
+    <Button
+        android:id="@+id/button_test_authentication"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/test_face_authentication" />
     
         <Button
         android:id="@+id/button_manage_data"

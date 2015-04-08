@@ -71,6 +71,8 @@ import com.google.common.base.Preconditions;
  */
 public class FaceDetectionActivity extends Activity implements CvCameraViewListener2 {
 
+	// TODO replace all by LOGGER
+
 	// ================================================================================================================
 	// MEMBERS
 	// private final String TAG = "FaceRecognitionActivity";
@@ -344,32 +346,33 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// stop taking pictures if we're still taking some by now
 		stopTakingPictures();
 		images.clear();
-		Log.d(OldMainActivity.class.getSimpleName(), "CameraFragment.onPause()");
+		Log.d(MainActivity.class.getSimpleName(), "CameraFragment.onPause()");
 	}
 
 	@Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		Log.v(OldMainActivity.class.getSimpleName(), event.toString());
-		switch (keyCode) {
+	public boolean onKeyDown(int _keyCode, KeyEvent _event) {
+		Log.v(MainActivity.class.getSimpleName(), _event.toString());
+		switch (_keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				Log.d(OldMainActivity.class.getSimpleName(), "keyodwn: vol down/up detected");
 				// TODO toggle recording
 				return true;
 			default:
-				return false;
+				return super.onKeyDown(_keyCode, _event);
 		}
 	}
 
 	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		Log.v(OldMainActivity.class.getSimpleName(), event.toString());
-		switch (keyCode) {
+	public boolean onKeyUp(int _keyCode, KeyEvent _event) {
+		Log.v(MainActivity.class.getSimpleName(), _event.toString());
+		switch (_keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
 			case KeyEvent.KEYCODE_VOLUME_UP:
+				// ignore as we are already handling the key down
 				return true;
 			default:
-				return false;
+				return super.onKeyUp(_keyCode, _event);
 		}
 	}
 

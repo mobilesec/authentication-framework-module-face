@@ -1,7 +1,5 @@
 package at.usmile.auth.module.face.activity;
 
-import java.util.List;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,8 +9,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
-import at.usmile.panshot.User;
-import at.usmile.panshot.nu.FaceModuleUtil;
 
 /**
  * Entry point if user opens app to train or change settings (= if not called by
@@ -44,21 +40,29 @@ public class MainActivity extends Activity {
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
 
-				// load users, don't switch Activities if impossible
-				List<User> loadUsers = FaceModuleUtil.loadExistingUsers(MainActivity.this);
-				if (loadUsers == null) {
-					return;
-				}
-
 				// ask for which user we're training
 				Toast.makeText(MainActivity.this, "TODO ask for user to train for here", Toast.LENGTH_SHORT).show();
 
 				// switch to face rec.
-				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
+				Intent i = new Intent(MainActivity.this, FaceDetectionActivity.class);
 				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_TRAINING);
-				startActivityForResult(i, REQUEST_CODE_MANAGE_DATA);
+				startActivityForResult(i, REQUEST_CODE_TRAIN);
 			}
 		});
+
+		Button buttonTestFaceAuth = (Button) findViewById(R.id.button_test_authentication);
+		buttonTestFaceAuth.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View _v) {
+				Log.d(TAG, "buttonTestFaceAuth#OnClickListener()");
+
+				// switch to face rec.
+				Intent i = new Intent(MainActivity.this, FaceDetectionActivity.class);
+				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_RECOGNITION);
+				startActivityForResult(i, REQUEST_CODE_TRAIN);
+			}
+		});
+
 		Button buttonManageData = (Button) findViewById(R.id.button_manage_data);
 		buttonManageData.setOnClickListener(new OnClickListener() {
 			@Override
@@ -73,7 +77,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonSettings#OnClickListener()");
-				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
+				Intent i = new Intent(MainActivity.this, SettingsActivity.class);
 				startActivityForResult(i, REQUEST_CODE_SETTINGS);
 			}
 		});
