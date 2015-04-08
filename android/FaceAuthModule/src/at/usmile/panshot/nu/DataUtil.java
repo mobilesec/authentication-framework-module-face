@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
@@ -36,7 +37,7 @@ import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 import au.com.bytecode.opencsv.CSVReader;
 
-// TODO extract all context stuff out of this class
+// TODO extract all context stuff out of this class -> FaceModuleUtil
 // TODO comments
 
 /**
@@ -49,7 +50,24 @@ import au.com.bytecode.opencsv.CSVReader;
 public class DataUtil {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataUtil.class);
 
+	public static User getUserForName(Context _context, String name) throws NotFoundException, IOException {
+		for (User u : loadExistingUsers(_context)) {
+			if (u.getName().equalsIgnoreCase(name)) {
+				return u;
+			}
+		}
+		throw new RuntimeException(name + ": no such user.");
+	}
+
+	public static User createNewUser(String name) {
+		String id = Long.toString(Math.abs(new Random(System.currentTimeMillis()).nextLong()));
+		return new User(id, name);
+	}
+
 	public static List<User> loadExistingUsers(Context _context) throws NotFoundException, IOException {
+		if (!MediaSaveUtil.isSdCardAvailableRW()) {
+			throw new SdCardNotAvailableException();
+		}
 		File mediaDir = MediaSaveUtil.getMediaStorageDirectory(_context.getResources().getString(
 				R.string.app_media_directory_name));
 		// load from fs/db

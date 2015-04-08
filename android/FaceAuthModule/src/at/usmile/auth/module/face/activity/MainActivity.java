@@ -1,5 +1,7 @@
 package at.usmile.auth.module.face.activity;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
+import at.usmile.panshot.User;
 import at.usmile.panshot.nu.FaceModuleUtil;
 
 /**
@@ -42,7 +45,8 @@ public class MainActivity extends Activity {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
 
 				// load users, don't switch Activities if impossible
-				if (!FaceModuleUtil.loadUsers(MainActivity.this)) {
+				List<User> loadUsers = FaceModuleUtil.loadExistingUsers(MainActivity.this);
+				if (loadUsers == null) {
 					return;
 				}
 
@@ -61,7 +65,6 @@ public class MainActivity extends Activity {
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonManageData#OnClickListener()");
 				Intent i = new Intent(MainActivity.this, ManageDataActivity.class);
-				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_RECOGNITION);
 				startActivityForResult(i, REQUEST_CODE_MANAGE_DATA);
 			}
 		});

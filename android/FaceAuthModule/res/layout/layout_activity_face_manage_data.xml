@@ -13,29 +13,17 @@
 	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content">
 	
+	
+	    
 	    <TextView
-	        android:id="@+id/section_label"
+	        android:id="@+id/TextView01"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
-	        android:layout_alignParentTop="true" />
-	
-	    <RadioGroup
-	        android:id="@+id/radioGroupTrainingRecognition"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/edit_text_new_user"
-	        android:layout_below="@+id/button_new_user" >
-	    </RadioGroup>
+	        android:layout_alignParentTop="true"
+	        android:text="@string/create_identity"
+	        android:textAppearance="?android:attr/textAppearanceMedium" />
 	    
-	    <RadioGroup
-	        android:id="@+id/radioGroupClassierType"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/radioGroupTrainingRecognition"
-	        android:layout_below="@+id/radioGroupTrainingRecognition" >
-	    </RadioGroup>
-
 	    <EditText
 	        android:id="@+id/edit_text_new_user"
 	        android:layout_width="wrap_content"
@@ -49,6 +37,7 @@
 	        <requestFocus />
 	    </EditText>
 
+	    
 	    <Button
 	        android:id="@+id/button_new_user"
 	        android:layout_width="wrap_content"
@@ -57,24 +46,15 @@
 	        android:layout_below="@+id/edit_text_new_user"
 	        android:text="@string/buttonnewuser" />
 
-	    <TextView
-	        android:id="@+id/TextView01"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_alignParentTop="true"
-	        android:text="@string/create_identity"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-	    <TextView
+	     <TextView
 	        android:id="@+id/textView1"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_alignParentLeft="true"
-	        android:layout_alignTop="@+id/radioGroupTrainingRecognition"
+	        android:layout_below="@+id/button_new_user"
 	        android:text="@string/delete_identity_description"
 	        android:textAppearance="?android:attr/textAppearanceMedium" />
-
+	     
 	    <Spinner
 	        android:id="@+id/spinner_identity"
 	        android:layout_width="wrap_content"
@@ -82,7 +62,7 @@
 	        android:layout_alignParentLeft="true"
 	        android:layout_below="@+id/textView1"
 	        android:contentDescription="@string/delete_identity_description" />
-
+	 
 	    <Button
 	        android:id="@+id/button_delete_identity"
 	        android:layout_width="wrap_content"

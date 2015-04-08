@@ -288,6 +288,13 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		// get info from calling Activity
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			String value = extras.getString(Statics.FACE_DETECTION_PURPOSE);
+			Toast.makeText(this, value, Toast.LENGTH_LONG).show();
+		}
+
 		// getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
 
 		setContentView(R.layout.layout_fragment_main_recording);
@@ -594,8 +601,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				switch (mClassifierMode) {
 					case Training:
 						// save images
-						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION,
-								SESSION_ID, USE_FRONTAL_ONLY, ANGLE_DIFF_OF_PHOTOS);
+						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
+								USE_FRONTAL_ONLY, ANGLE_DIFF_OF_PHOTOS);
 						break;
 
 					case Recognition:
@@ -628,8 +635,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 									// DEBUG save energy image for
 									// review
 									try {
-										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this
-												.getResources().getString(R.string.app_media_directory_name));
+										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+												.getString(R.string.app_media_directory_name));
 										MediaSaveUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/normalized.jpg"),
 												normalizedMatEnergy.value1);
 										MediaSaveUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/energy.jpg"),
