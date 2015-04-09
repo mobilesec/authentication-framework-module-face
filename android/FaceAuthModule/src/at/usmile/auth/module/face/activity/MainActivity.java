@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 
 /**
@@ -34,19 +33,25 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.layout_activity_face_main);
 
-		Button buttonTrain = (Button) findViewById(R.id.button_train);
+		Button buttonTrain = (Button) findViewById(R.id.button_record_data);
 		buttonTrain.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
-
-				// ask for which user we're training
-				Toast.makeText(MainActivity.this, "TODO ask for user to train for here", Toast.LENGTH_SHORT).show();
-
 				// switch to face rec.
 				Intent i = new Intent(MainActivity.this, FaceDetectionActivity.class);
-				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_TRAINING);
+				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_RECORD_DATA);
 				startActivityForResult(i, REQUEST_CODE_TRAIN);
+			}
+		});
+
+		Button buttonRetrainClassifiers = (Button) findViewById(R.id.button_retrain_classifiers);
+		buttonRetrainClassifiers.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View _v) {
+				Log.d(TAG, "buttonRetrainClassifiers#OnClickListener()");
+				// TODO start background training service, block button until
+				// done
 			}
 		});
 
@@ -58,7 +63,7 @@ public class MainActivity extends Activity {
 
 				// switch to face rec.
 				Intent i = new Intent(MainActivity.this, FaceDetectionActivity.class);
-				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_VALUE_RECOGNITION);
+				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_RECOGNITION_TEST);
 				startActivityForResult(i, REQUEST_CODE_TRAIN);
 			}
 		});

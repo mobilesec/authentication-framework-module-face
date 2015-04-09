@@ -29,17 +29,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
+import android.content.DialogInterface.OnKeyListener;
 import android.content.res.Resources.NotFoundException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
-import at.usmile.functional.Fun;
+import at.usmile.functional.FunApply;
 import at.usmile.functional.FunFilter;
 import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
@@ -50,7 +57,8 @@ import at.usmile.panshot.SensorValues.Observation;
 import at.usmile.panshot.SharedPrefs;
 import at.usmile.panshot.User;
 import at.usmile.panshot.nu.DataUtil;
-import at.usmile.panshot.nu.RecognitionSingleton;
+import at.usmile.panshot.nu.FaceModuleUtil;
+import at.usmile.panshot.nu.RecognitionModule;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.TrainingData;
 import at.usmile.panshot.util.MediaSaveUtil;
@@ -72,6 +80,8 @@ import com.google.common.base.Preconditions;
 public class FaceDetectionActivity extends Activity implements CvCameraViewListener2 {
 
 	// TODO replace all by LOGGER
+	// TODO disable discarding of "ask for user dialogs" when clicking on
+	// background
 
 	// ================================================================================================================
 	// MEMBERS
@@ -79,15 +89,15 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(FaceDetectionActivity.class);
 
-	private static enum ClassifierMode {
-		Training, Recognition
+	private static enum FaceDetectionPurpose {
+		RECORD_DATA, RECOGNITION_TEST, AUTHENTICATION
 	}
 
 	/**
 	 * Which recognition gets used when a) creating+training classifiers from
 	 * FS-data and b) when classifying new pan shot input.
 	 */
-	private ClassifierMode mClassifierMode = ClassifierMode.Training;
+	private FaceDetectionPurpose mFaceDetectionPurpose = FaceDetectionPurpose.RECORD_DATA;
 
 	// OpenCV settings
 	private static final String TAG = "OCVSample::Activity";
@@ -109,7 +119,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 	private CameraBridgeViewBase mOpenCvCameraView;
 
-	private RecognitionSingleton mRecognitionSingleton;
+	private RecognitionModule mRecognitionModule;
 
 	// ================================================================================================================
 	// CAMVIEW STATICS
@@ -290,20 +300,137 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		setContentView(R.layout.layout_fragment_main_recording);
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
 		// get info from calling Activity
 		Bundle extras = getIntent().getExtras();
 		if (extras != null) {
 			String value = extras.getString(Statics.FACE_DETECTION_PURPOSE);
 			Toast.makeText(this, value, Toast.LENGTH_LONG).show();
+
+			// RECORD NEW DATA
+			if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECORD_DATA)) {
+				mFaceDetectionPurpose = FaceDetectionPurpose.RECORD_DATA;
+
+				// load users - exit activity if that fails
+				final List<User> users = FaceModuleUtil.loadExistingUsers(this, new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface _dialog, int _which) {
+						Log.d(TAG, "Dialog#onClick()");
+						finish();
+					}
+				}, new Dialog.OnKeyListener() {
+					@Override
+					public boolean onKey(DialogInterface _dialog, int _keyCode, KeyEvent _event) {
+						Log.d(TAG, "Dialog#onKey(Back)");
+						finish();
+						return false;
+					}
+				});
+				if (users == null) {
+					// don't load other stuff
+					return;
+				}
+
+				// ask for user to train for for
+				AlertDialog.Builder builder = new Builder(this).setTitle(getResources().getString(R.string.chose_user_to_train))
+						.setOnKeyListener(new OnKeyListener() {
+							@Override
+							public boolean onKey(DialogInterface _dialog, int _keyCode, KeyEvent _event) {
+								finish();
+								return false;
+							}
+						});
+				// back = close dialog AND activity
+				final OnKeyListener onKeyListener = new OnKeyListener() {
+					@Override
+					public boolean onKey(DialogInterface _dialog, int _keyCode, KeyEvent _event) {
+						if (_keyCode == KeyEvent.KEYCODE_BACK) {
+							FaceDetectionActivity.this.finish();
+						}
+						return false;
+					}
+				};
+				builder.setOnKeyListener(onKeyListener);
+				// add users
+				final String[] userNames = new String[users.size() + 1];
+				for (int i = 0; i < users.size(); i++) {
+					userNames[i] = users.get(i).getName();
+				}
+				userNames[userNames.length - 1] = getResources().getString(R.string.create_new_user);
+				// add onclick listener
+				OnClickListener listener = new OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+						Log.d(TAG, "#onClick(" + which + ")");
+						if (which < users.size()) {
+							mCurrentUser = users.get(which);
+							updateUiFromCurrentUser();
+						} else {
+							// ask for name of new user
+
+							// #1 dialog for name already taken (just in
+							// case...)
+							DialogInterface.OnClickListener listener2 = new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									FaceDetectionActivity.this.finish();
+								}
+							};
+							final Builder dialog2 = new AlertDialog.Builder(FaceDetectionActivity.this)
+									.setTitle(FaceDetectionActivity.this.getResources().getString(R.string.error))
+									.setMessage(
+											FaceDetectionActivity.this.getResources().getString(
+													R.string.toast_username_already_taken))
+									.setPositiveButton(FaceDetectionActivity.this.getResources().getString(R.string.ok),
+											listener2).setOnKeyListener(onKeyListener);
+
+							// #2 ask for name of new user
+							final EditText edittext = new EditText(FaceDetectionActivity.this);
+							DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int whichButton) {
+									String name = edittext.getText().toString();
+									// check is username is already in use
+									for (String s : userNames) {
+										if (s.equalsIgnoreCase(name)) {
+											dialog2.show();
+										} else {
+											mCurrentUser = DataUtil.createNewUser(name);
+											updateUiFromCurrentUser();
+										}
+									}
+								}
+							};
+							new AlertDialog.Builder(FaceDetectionActivity.this)
+									.setTitle(FaceDetectionActivity.this.getResources().getString(R.string.create_new_user))
+									.setMessage(FaceDetectionActivity.this.getResources().getString(R.string.chose_username))
+									.setView(edittext)
+									.setPositiveButton(FaceDetectionActivity.this.getResources().getString(R.string.ok), listener)
+									.setOnKeyListener(onKeyListener).show();
+						}
+					}
+				};
+				builder.setItems(userNames, listener);
+				builder.show();
+
+				// TODO show user name we're training for in UI
+			}
+
+			// TEST FACE REC
+			else if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECOGNITION_TEST)) {
+				mFaceDetectionPurpose = FaceDetectionPurpose.RECOGNITION_TEST;
+				// TODO load classifier
+			}
+
+			// AUTHENTICATE
+			else {
+				mFaceDetectionPurpose = FaceDetectionPurpose.AUTHENTICATION;
+				// TODO load classifier
+			}
 		}
 
-		// getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
-
-		setContentView(R.layout.layout_fragment_main_recording);
-
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-		mRecognitionSingleton = new RecognitionSingleton();
+		mRecognitionModule = new RecognitionModule();
 	}
 
 	@Override
@@ -327,12 +454,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
 
-		if (!MediaSaveUtil.isSdCardAvailableRW()) {
-			Toast.makeText(this, getResources().getString(R.string.sd_card_not_available), Toast.LENGTH_LONG).show();
-			return;
-		}
-
-		// updateUiFromCurrentUser();
+		updateUiFromCurrentUser();
 
 		Log.d(OldMainActivity.class.getSimpleName(), "CameraFragment.onResume()");
 	}
@@ -357,10 +479,10 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				Log.d(OldMainActivity.class.getSimpleName(), "keyodwn: vol down/up detected");
 				// TODO toggle recording
+				toggleRecording();
 				return true;
-			default:
-				return super.onKeyDown(_keyCode, _event);
 		}
+		return super.onKeyDown(_keyCode, _event);
 	}
 
 	@Override
@@ -371,19 +493,31 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				// ignore as we are already handling the key down
 				return true;
-			default:
-				return super.onKeyUp(_keyCode, _event);
 		}
+		return super.onKeyUp(_keyCode, _event);
 	}
 
 	public void onDestroy() {
 		Log.i(TAG, "CameraFragment.onDestroy()");
-		mOpenCvCameraView.disableView();
+		if (mOpenCvCameraView != null) {
+			mOpenCvCameraView.disableView();
+		}
 		super.onDestroy();
 	}
 
 	// ================================================================================================================
 	// METHODS
+
+	private void updateUiFromCurrentUser() {
+		if (mFaceDetectionPurpose == FaceDetectionPurpose.RECORD_DATA) {
+			if (mCurrentUser == null) {
+				textviewIdentity.setText(getResources().getString(R.string.current_user,
+						getResources().getString(R.string.not_available)));
+			} else {
+				textviewIdentity.setText(getResources().getString(R.string.current_user, mCurrentUser.getName()));
+			}
+		}
+	}
 
 	private void startTakingPictures() {
 		if (mCurrentUser == null) {
@@ -601,14 +735,14 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			if (images.size() > 0) {
 				// do face detection for each image
 				detectFacesInRecordedImagesDependingOnAngle();
-				switch (mClassifierMode) {
-					case Training:
+				switch (mFaceDetectionPurpose) {
+					case RECORD_DATA:
 						// save images
 						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
 								USE_FRONTAL_ONLY, ANGLE_DIFF_OF_PHOTOS);
 						break;
 
-					case Recognition:
+					case RECOGNITION_TEST:
 						// only use images in which faces where
 						// detected
 						List<PanshotImage> imagesWithFaces = FunUtil.filter(images, new FunFilter<PanshotImage>() {
@@ -619,7 +753,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						});
 						// normalise energy of all images
 						if (SharedPrefs.useImageEnergyNormlization(FaceDetectionActivity.this)) {
-							FunUtil.map(imagesWithFaces, new Fun<PanshotImage, PanshotImage>() {
+							FunUtil.apply(imagesWithFaces, new FunApply<PanshotImage, PanshotImage>() {
 								@Override
 								public PanshotImage apply(PanshotImage panshotImage) {
 									// normalise the face's energy
@@ -655,7 +789,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						}
 						// RESIZE images as KNN, SVM etc need images
 						// that are of same size
-						FunUtil.map(imagesWithFaces, new Fun<PanshotImage, PanshotImage>() {
+						FunUtil.apply(imagesWithFaces, new FunApply<PanshotImage, PanshotImage>() {
 							@Override
 							public PanshotImage apply(PanshotImage _t) {
 								Imgproc.resize(
@@ -670,7 +804,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							// decide which recognition to use
 							switch (SharedPrefs.getRecognitionType(FaceDetectionActivity.this)) {
 								case KNN: {
-									GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionSingleton
+									GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
 											.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
 													SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
 													ANGLE_DIFF_OF_PHOTOS);
@@ -684,7 +818,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 								}
 
 								case SVM: {
-									GenericTuple3<User, Double, Map<User, Double>> classificationResult = mRecognitionSingleton
+									GenericTuple3<User, Double, Map<User, Double>> classificationResult = mRecognitionModule
 											.classifySvm(imagesWithFaces, SharedPrefs.usePca(this),
 													SharedPrefs.getAmountOfPcaFeatures(this), ANGLE_DIFF_OF_PHOTOS);
 									Toast.makeText(
@@ -716,7 +850,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// do image energy normalisation
 		if (SharedPrefs.useImageEnergyNormlization(this)) {
 			final float subsamplingFactor = SharedPrefs.getImageEnergyNormalizationSubsamplingFactor(this);
-			FunUtil.map(trainingPanshotImages, new Fun<PanshotImage, PanshotImage>() {
+			FunUtil.apply(trainingPanshotImages, new FunApply<PanshotImage, PanshotImage>() {
 				@Override
 				public PanshotImage apply(PanshotImage panshotImage) {
 					// normalise the face's energy
@@ -737,7 +871,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// ... and track amount of images per (subject, perspective)
 		Map<GenericTuple2<String, Integer>, Integer> imageAmount = new HashMap<GenericTuple2<String, Integer>, Integer>();
 		for (PanshotImage image : trainingPanshotImages) {
-			int classifierIndex = RecognitionSingleton.getClassifierIndexForAngle(image.angleValues[image.rec.angleIndex],
+			int classifierIndex = RecognitionModule.getClassifierIndexForAngle(image.angleValues[image.rec.angleIndex],
 					ANGLE_DIFF_OF_PHOTOS);
 			if (!trainingdataPerClassifier.containsKey(classifierIndex)) {
 				trainingdataPerClassifier.put(classifierIndex, new TrainingData());
@@ -767,7 +901,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// RESIZE images as KNN, SVM etc need images that are of
 		// same size
 		for (TrainingData trainingData : trainingdataPerClassifier.values()) {
-			FunUtil.map(trainingData.images, new Fun<PanshotImage, PanshotImage>() {
+			FunUtil.apply(trainingData.images, new FunApply<PanshotImage, PanshotImage>() {
 				@Override
 				public PanshotImage apply(PanshotImage _t) {
 					Imgproc.resize(_t.grayFace, _t.grayFace, new Size(SharedPrefs.getFaceWidth(FaceDetectionActivity.this),
@@ -791,13 +925,13 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// classifier
 		switch (SharedPrefs.getRecognitionType(this)) {
 			case KNN:
-				mRecognitionSingleton.trainKnn(trainingdataPerClassifier, SharedPrefs.usePca(this),
+				mRecognitionModule.trainKnn(trainingdataPerClassifier, SharedPrefs.usePca(this),
 						SharedPrefs.getAmountOfPcaFeatures(this));
 				// trainJavaCv(trainingdataPerClassifier);
 				break;
 
 			case SVM:
-				mRecognitionSingleton.trainSvm(trainingdataPerClassifier, SharedPrefs.usePca(this),
+				mRecognitionModule.trainSvm(trainingdataPerClassifier, SharedPrefs.usePca(this),
 						SharedPrefs.getAmountOfPcaFeatures(this));
 
 			default:

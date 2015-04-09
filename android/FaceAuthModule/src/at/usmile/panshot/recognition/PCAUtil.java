@@ -9,7 +9,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 import android.util.Log;
-import at.usmile.functional.Fun;
+import at.usmile.functional.FunApply;
 import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.tuple.GenericTuple3;
@@ -31,7 +31,7 @@ public class PCAUtil {
 	 */
 	public static GenericTuple3<Mat, Mat, Mat> pcaCompute(List<PanshotImage> _images) {
 		// concatenate all samples to rows of a single Mat
-		List<Mat> samplesList = FunUtil.map(_images, new Fun<PanshotImage, Mat>() {
+		List<Mat> samplesList = FunUtil.apply(_images, new FunApply<PanshotImage, Mat>() {
 			@Override
 			public Mat apply(PanshotImage _t) {
 				return _t.grayFace;
@@ -83,7 +83,7 @@ public class PCAUtil {
 
 	public static Mat pcaProject(List<PanshotImage> _images, Mat _mean, Mat _eigenvectors) {
 		// concatenate all samples to rows of a single Mat
-		List<Mat> samplesList = FunUtil.map(_images, new Fun<PanshotImage, Mat>() {
+		List<Mat> samplesList = FunUtil.apply(_images, new FunApply<PanshotImage, Mat>() {
 			@Override
 			public Mat apply(PanshotImage _t) {
 				return _t.grayFace;

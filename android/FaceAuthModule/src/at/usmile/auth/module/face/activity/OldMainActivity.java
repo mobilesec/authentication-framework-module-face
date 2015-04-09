@@ -72,7 +72,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
-import at.usmile.functional.Fun;
+import at.usmile.functional.FunApply;
 import at.usmile.functional.FunFilter;
 import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
@@ -1221,7 +1221,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 									});
 									// normalise energy of all images
 									if (SharedPrefs.useImageEnergyNormlization(getActivity())) {
-										FunUtil.map(imagesWithFaces, new Fun<PanshotImage, PanshotImage>() {
+										FunUtil.apply(imagesWithFaces, new FunApply<PanshotImage, PanshotImage>() {
 											@Override
 											public PanshotImage apply(PanshotImage panshotImage) {
 												// normalise the face's energy
@@ -1257,7 +1257,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 									}
 									// RESIZE images as KNN, SVM etc need images
 									// that are of same size
-									FunUtil.map(imagesWithFaces, new Fun<PanshotImage, PanshotImage>() {
+									FunUtil.apply(imagesWithFaces, new FunApply<PanshotImage, PanshotImage>() {
 										@Override
 										public PanshotImage apply(PanshotImage _t) {
 											Imgproc.resize(
@@ -1302,7 +1302,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 					// do image energy normalisation
 					if (SharedPrefs.useImageEnergyNormlization(getActivity())) {
 						final float subsamplingFactor = SharedPrefs.getImageEnergyNormalizationSubsamplingFactor(getActivity());
-						FunUtil.map(trainingPanshotImages, new Fun<PanshotImage, PanshotImage>() {
+						FunUtil.apply(trainingPanshotImages, new FunApply<PanshotImage, PanshotImage>() {
 							@Override
 							public PanshotImage apply(PanshotImage panshotImage) {
 								// normalise the face's energy
@@ -1354,7 +1354,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 					// RESIZE images as KNN, SVM etc need images that are of
 					// same size
 					for (TrainingData trainingData : trainingdataPerClassifier.values()) {
-						FunUtil.map(trainingData.images, new Fun<PanshotImage, PanshotImage>() {
+						FunUtil.apply(trainingData.images, new FunApply<PanshotImage, PanshotImage>() {
 							@Override
 							public PanshotImage apply(PanshotImage _t) {
 								Imgproc.resize(_t.grayFace, _t.grayFace, new Size(SharedPrefs.getFaceWidth(getActivity()),

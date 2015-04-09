@@ -1,171 +1,135 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/view"
+    android:id="@+id/view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity$DummySectionFragment">
+    tools:context=".MainActivity$DummySectionFragment" >
 
-	<RelativeLayout
-	    android:layout_width="wrap_content"
-	    android:layout_height="wrap_content" >
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
 
-	    <TextView
-	        android:id="@+id/section_label"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_alignParentTop="true" />
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:text="@string/classifier_type"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	    <TextView
-	        android:id="@+id/textView3"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/section_label"
-	        android:text="@string/training_recognition"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <RadioGroup
+            android:id="@+id/radioGroupClassierType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/textView4"
+            android:layout_below="@+id/textView4" >
 
-	    <RadioGroup
-	        android:id="@+id/radioGroupTrainingRecognition"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/textView3"
-	        android:layout_below="@+id/textView3" >
+            <RadioButton
+                android:id="@+id/radioKnn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/radiobutton_knn" />
 
-	        <RadioButton
-	            android:id="@+id/radioTraining"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:checked="true"
-	            android:text="@string/radiobutton_training" />
+            <RadioButton
+                android:id="@+id/radioSvm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/radiobutton_svm" />
+        </RadioGroup>
 
-	        <RadioButton
-	            android:id="@+id/radioRecognition"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="@string/radiobutton_recognition" />
-	    </RadioGroup>
+        <TextView
+            android:id="@+id/textViewKnnK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/radioGroupClassierType"
+            android:text="@string/knn_k"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	    <TextView
-	        android:id="@+id/textView4"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/radioGroupTrainingRecognition"
-	        android:layout_below="@+id/radioGroupTrainingRecognition"
-	        android:text="@string/classifier_type"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <EditText
+            android:id="@+id/editTextKnnK"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textViewKnnK"
+            android:ems="10"
+            android:inputType="number" />
 
-	    <RadioGroup
-	        android:id="@+id/radioGroupClassierType"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/textView4"
-	        android:layout_below="@+id/textView4" >
+        <CheckBox
+            android:id="@+id/checkBoxUseImageEnergyNormalization"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/editTextKnnK"
+            android:layout_below="@+id/editTextKnnK"
+            android:text="@string/use_image_energy_normalization" />
 
-	        <RadioButton
-	            android:id="@+id/radioKnn"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:checked="true"
-	            android:text="@string/radiobutton_knn" />
+        <TextView
+            android:id="@+id/textViewUseImageEnergyNormalizationKernelSubsampling"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/checkBoxUseImageEnergyNormalization"
+            android:text="@string/image_energy_normalization_kernel_subsamling"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	        <RadioButton
-	            android:id="@+id/radioSvm"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="@string/radiobutton_svm" />
-	    </RadioGroup>
+        <EditText
+            android:id="@+id/editTextImageEnergyNormalizationKernelSubsampling"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textViewUseImageEnergyNormalizationKernelSubsampling"
+            android:ems="10"
+            android:inputType="numberDecimal" />
 
-	    <TextView
-	        android:id="@+id/textViewKnnK"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/radioGroupClassierType"
-	        android:text="@string/knn_k"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <CheckBox
+            android:id="@+id/checkBoxUsePca"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/editTextImageEnergyNormalizationKernelSubsampling"
+            android:layout_below="@+id/editTextImageEnergyNormalizationKernelSubsampling"
+            android:text="@string/use_pca" />
 
-	    <EditText
-	        android:id="@+id/editTextKnnK"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/textViewKnnK"
-	        android:ems="10"
-	        android:inputType="number" />
+        <TextView
+            android:id="@+id/textViewPcaFeatures"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/checkBoxUsePca"
+            android:text="@string/pca_features"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	    <CheckBox
-	        android:id="@+id/checkBoxUseImageEnergyNormalization"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/editTextKnnK"
-	        android:layout_below="@+id/editTextKnnK"
-	        android:text="@string/use_image_energy_normalization" />
+        <EditText
+            android:id="@+id/editTextPcaFeatures"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textViewPcaFeatures"
+            android:ems="20"
+            android:inputType="number" />
 
-	    <TextView
-	        android:id="@+id/textViewUseImageEnergyNormalizationKernelSubsampling"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/checkBoxUseImageEnergyNormalization"
-	        android:text="@string/image_energy_normalization_kernel_subsamling"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
+        <TextView
+            android:id="@+id/textViewFaceSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/editTextPcaFeatures"
+            android:text="@string/face_size"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-	    <EditText
-	        android:id="@+id/editTextImageEnergyNormalizationKernelSubsampling"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/textViewUseImageEnergyNormalizationKernelSubsampling"
-	        android:ems="10"
-	        android:inputType="numberDecimal" />
-
-	    <CheckBox
-	        android:id="@+id/checkBoxUsePca"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignLeft="@+id/editTextImageEnergyNormalizationKernelSubsampling"
-	        android:layout_below="@+id/editTextImageEnergyNormalizationKernelSubsampling"
-	        android:text="@string/use_pca" />
-
-	    <TextView
-	        android:id="@+id/textViewPcaFeatures"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/checkBoxUsePca"
-	        android:text="@string/pca_features"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-	    <EditText
-	        android:id="@+id/editTextPcaFeatures"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/textViewPcaFeatures"
-	        android:ems="20"
-	        android:inputType="number" />
-
-	    <TextView
-	        android:id="@+id/textViewFaceSize"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/editTextPcaFeatures"
-	        android:text="@string/face_size"
-	        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-	    <EditText
-	        android:id="@+id/editTextFaceSize"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_alignParentLeft="true"
-	        android:layout_below="@+id/textViewFaceSize"
-	        android:ems="100"
-	        android:inputType="number" />
-	</RelativeLayout>
+        <EditText
+            android:id="@+id/editTextFaceSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textViewFaceSize"
+            android:ems="100"
+            android:inputType="number" />
+    </RelativeLayout>
 
 </ScrollView>

@@ -17,8 +17,8 @@ import at.usmile.panshot.recognition.svm.SvmClassifier;
 import at.usmile.tuple.GenericTuple2;
 import at.usmile.tuple.GenericTuple3;
 
-public class RecognitionSingleton {
-	private static final Logger LOGGER = LoggerFactory.getLogger(RecognitionSingleton.class);
+public class RecognitionModule {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RecognitionModule.class);
 
 	// ================================================================================================================
 	// MEMBERS

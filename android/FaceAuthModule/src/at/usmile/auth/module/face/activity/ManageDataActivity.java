@@ -3,6 +3,8 @@ package at.usmile.auth.module.face.activity;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -49,7 +51,7 @@ public class ManageDataActivity extends Activity {
 		});
 
 		// load users
-		final List<User> users = FaceModuleUtil.loadExistingUsers(this);
+		final List<User> users = FaceModuleUtil.loadExistingUsers(this, null, null);
 		// delete user UI components
 		final Spinner spinnerIdentity = (Spinner) findViewById(R.id.spinner_identity);
 		final ArrayAdapter<String> spinnerAdapterUsers = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,
@@ -77,6 +79,26 @@ public class ManageDataActivity extends Activity {
 			public void onClick(View _v) {
 				Log.d(ManageDataActivity.class.getSimpleName(), "mButtonDeleteIdentity.setOnClickListener()");
 				Log.d(ManageDataActivity.class.getSimpleName(), "delete user: " + users.get(mSpinnerSelectedIndex));
+
+				// "are you sure" dialogue box
+				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+							case DialogInterface.BUTTON_POSITIVE:
+								Log.d(ManageDataActivity.class.getSimpleName(), "buttonDeleteIdentity.YES");
+								break;
+							case DialogInterface.BUTTON_NEGATIVE:
+								Log.d(ManageDataActivity.class.getSimpleName(), "buttonDeleteIdentity.NO");
+								break;
+						}
+					}
+				};
+				AlertDialog.Builder builder = new AlertDialog.Builder(ManageDataActivity.this);
+				builder.setMessage(ManageDataActivity.this.getResources().getString(R.string.really_delete_user))
+						.setPositiveButton(ManageDataActivity.this.getResources().getString(R.string.yes), dialogClickListener)
+						.setNegativeButton(ManageDataActivity.this.getResources().getString(R.string.no), dialogClickListener)
+						.show();
 			}
 		});
 		// update UI

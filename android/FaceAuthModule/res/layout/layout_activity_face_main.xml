@@ -5,10 +5,16 @@
     android:orientation="vertical" >
 
     <Button
-        android:id="@+id/button_train"
+        android:id="@+id/button_record_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/trigger_training" />
+
+    <Button
+        android:id="@+id/button_retrain_classifiers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/retrain_classifiers" />
 
     <Button
         android:id="@+id/button_test_authentication"

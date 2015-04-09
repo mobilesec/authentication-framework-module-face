@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.util.Log;
 import android.widget.EditText;
-import android.widget.Toast;
 
 /**
  * Derivate of the JOptionPanel in Swing.
@@ -16,7 +15,7 @@ import android.widget.Toast;
  * @date 08.02.2012
  * @version 1
  */
-public class AndroidOptionPane {
+public class DialogueUtil {
 
 	// ================================================================================================================
 	// MEMBERS
@@ -25,8 +24,9 @@ public class AndroidOptionPane {
 	// METHODS
 
 	/**
-	 * Promts user for text input. Is a popup that has an textfield + an OK button. The listener (observer) gets informed as soon
-	 * as the user clicked the OK button, the string input gets delivered via
+	 * Promts user for text input. Is a popup that has an textfield + an OK
+	 * button. The listener (observer) gets informed as soon as the user clicked
+	 * the OK button, the string input gets delivered via
 	 * {@link Observer#update(java.util.Observable, Object)}.
 	 * 
 	 * @param _context
@@ -46,7 +46,7 @@ public class AndroidOptionPane {
 		final StringBuilder sb = new StringBuilder();
 		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int whichButton) {
-				Log.d(AndroidOptionPane.class.getSimpleName(), "OK clicked.");
+				Log.d(DialogueUtil.class.getSimpleName(), "OK clicked.");
 				sb.append(input.getText().toString());
 				_listener.update(null, input.getText().toString());
 			}
@@ -58,9 +58,5 @@ public class AndroidOptionPane {
 			}
 		});
 		alert.show();
-	}
-
-	public static void showToast(Context _context, String _msg) {
-		Toast.makeText(_context, _msg, Toast.LENGTH_LONG).show();
 	}
 }
