@@ -13,7 +13,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.Spinner;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.User;
@@ -38,17 +37,6 @@ public class ManageDataActivity extends Activity {
 		Log.d(TAG, "onCreate()");
 
 		setContentView(R.layout.layout_activity_face_manage_data);
-
-		// add user UI components
-		final EditText edittextNewUser = (EditText) findViewById(R.id.edit_text_new_user);
-		Button buttonNewUser = (Button) findViewById(R.id.button_new_user);
-		buttonNewUser.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View _v) {
-				Log.d(ManageDataActivity.class.getSimpleName(), "buttonNewUser.setOnClickListener()");
-				Log.d(ManageDataActivity.class.getSimpleName(), "create user " + edittextNewUser.getText());
-			}
-		});
 
 		// load users
 		final List<User> users = FaceModuleUtil.loadExistingUsers(this, null, null);
@@ -95,7 +83,9 @@ public class ManageDataActivity extends Activity {
 					}
 				};
 				AlertDialog.Builder builder = new AlertDialog.Builder(ManageDataActivity.this);
-				builder.setMessage(ManageDataActivity.this.getResources().getString(R.string.really_delete_user))
+				builder.setMessage(
+						ManageDataActivity.this.getResources().getString(R.string.really_delete_user,
+								users.get(mSpinnerSelectedIndex).getName()))
 						.setPositiveButton(ManageDataActivity.this.getResources().getString(R.string.yes), dialogClickListener)
 						.setNegativeButton(ManageDataActivity.this.getResources().getString(R.string.no), dialogClickListener)
 						.show();

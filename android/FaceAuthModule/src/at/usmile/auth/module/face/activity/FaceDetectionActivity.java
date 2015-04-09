@@ -413,8 +413,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				};
 				builder.setItems(userNames, listener);
 				builder.show();
-
-				// TODO show user name we're training for in UI
 			}
 
 			// TEST FACE REC
@@ -478,7 +476,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
 			case KeyEvent.KEYCODE_VOLUME_UP:
 				Log.d(OldMainActivity.class.getSimpleName(), "keyodwn: vol down/up detected");
-				// TODO toggle recording
 				toggleRecording();
 				return true;
 		}
@@ -619,9 +616,13 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 					(acc == null ? null : acc.value), (light == null ? null : light.value), timestamp);
 			images.add(panshotImage);
 			if (USE_FRONTAL_ONLY) {
-				// we've taken 1 image, stop recording automatically right
-				// now
-				// TODO toggle recording
+				// we've taken 1 image, stop recording automatically right now
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						toggleRecording();
+					}
+				});
 			}
 		}
 		return mGray;
@@ -736,6 +737,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				// do face detection for each image
 				detectFacesInRecordedImagesDependingOnAngle();
 				switch (mFaceDetectionPurpose) {
+
 					case RECORD_DATA:
 						// save images
 						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,

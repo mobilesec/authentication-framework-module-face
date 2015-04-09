@@ -10,6 +10,6 @@
 	<classpathentry kind="lib" path="libs/android-support-v4.jar"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OpenCV Library - 2.4.8"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Fun"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Fun"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
