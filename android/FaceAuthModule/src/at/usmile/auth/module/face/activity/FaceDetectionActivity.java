@@ -40,6 +40,7 @@ import android.content.res.Resources.NotFoundException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -303,14 +304,44 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		setContentView(R.layout.layout_fragment_main_recording);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+		textviewIdentity = (TextView) findViewById(R.id.textview_identity);
+		Preconditions.checkNotNull(textviewIdentity, "textviewIdentity is null.");
+
+		// camview
+		mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
+		mOpenCvCameraView.setCameraIndex(1);
+		// mOpenCvCameraView.setDisplayOrientation(90);
+		// mOpenCvCameraView.setRotation(90);
+		mOpenCvCameraView.setCvCameraViewListener(this);
+
+		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
+
+		// TODO only if needed
+		mRecognitionModule = new RecognitionModule();
+
 		// get info from calling Activity
 		Bundle extras = getIntent().getExtras();
+
 		if (extras != null) {
 			String value = extras.getString(Statics.FACE_DETECTION_PURPOSE);
 			Toast.makeText(this, value, Toast.LENGTH_LONG).show();
 
+			// TEST FACE REC
+			if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECOGNITION_TEST)) {
+				mFaceDetectionPurpose = FaceDetectionPurpose.RECOGNITION_TEST;
+				// make user text invisible
+				textviewIdentity.setVisibility(View.INVISIBLE);
+			}
+
+			// AUTHENTICATE
+			else if (value.equals(Statics.FACE_DETECTION_PURPOSE_AUTHENTICATION)) {
+				mFaceDetectionPurpose = FaceDetectionPurpose.AUTHENTICATION;
+				// make user text invisible
+				textviewIdentity.setVisibility(View.INVISIBLE);
+			}
+
 			// RECORD NEW DATA
-			if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECORD_DATA)) {
+			else if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECORD_DATA)) {
 				mFaceDetectionPurpose = FaceDetectionPurpose.RECORD_DATA;
 
 				// load users - exit activity if that fails
@@ -333,7 +364,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 					return;
 				}
 
-				// ask for user to train for for
+				// ask for user to train for
 				AlertDialog.Builder builder = new Builder(this).setTitle(getResources().getString(R.string.chose_user_to_train))
 						.setOnKeyListener(new OnKeyListener() {
 							@Override
@@ -414,47 +445,28 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				builder.setItems(userNames, listener);
 				builder.show();
 			}
-
-			// TEST FACE REC
-			else if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECOGNITION_TEST)) {
-				mFaceDetectionPurpose = FaceDetectionPurpose.RECOGNITION_TEST;
-				// TODO load classifier
-			}
-
-			// AUTHENTICATE
-			else {
-				mFaceDetectionPurpose = FaceDetectionPurpose.AUTHENTICATION;
-				// TODO load classifier
-			}
 		}
-
-		mRecognitionModule = new RecognitionModule();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-
-		mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
-		mOpenCvCameraView.setCameraIndex(1);
-		// ((MainActivity)
-		// FaceRecognitionActivity.this).mOpenCvCameraView.setDisplayOrientation(90);
-		// ((MainActivity)
-		// FaceRecognitionActivity.this).mOpenCvCameraView.setRotation(90);
-		mOpenCvCameraView.setCvCameraViewListener(this);
+		Log.d(OldMainActivity.class.getSimpleName(), "CameraFragment.onResume()");
 
 		// create sensor stuff
 		SensorComponent.init(this);
 		SensorComponent.instance().addObserver(mPhotoGyroListener);
 
-		textviewIdentity = (TextView) findViewById(R.id.textview_identity);
-		Preconditions.checkNotNull(textviewIdentity, "textviewIdentity is null.");
-
-		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-
 		updateUiFromCurrentUser();
 
-		Log.d(OldMainActivity.class.getSimpleName(), "CameraFragment.onResume()");
+		switch (mFaceDetectionPurpose) {
+			case RECOGNITION_TEST:
+				train();
+				break;
+
+			default:
+				break;
+		}
 	}
 
 	@Override
@@ -844,10 +856,11 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		}
 	}
 
-	private void doRecognition() {
+	public void train() {
+		// TODO put that in service
 
 		// load training data
-		Log.d(TAG, "CameraFragment.update(): loading training panshot images...");
+		Log.d(TAG, "loading training panshot images...");
 		List<PanshotImage> trainingPanshotImages = DataUtil.loadTrainingData(this);
 		// do image energy normalisation
 		if (SharedPrefs.useImageEnergyNormlization(this)) {
@@ -939,6 +952,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			default:
 				break;
 		}
+		// throw new RuntimeException("blaaa");
 		Log.i(TAG, "CameraFragment.update(): switching to recognition mode done.");
 	}
 }
