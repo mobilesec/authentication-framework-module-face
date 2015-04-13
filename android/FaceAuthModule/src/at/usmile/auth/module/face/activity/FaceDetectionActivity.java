@@ -190,7 +190,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	private int mAbsoluteFaceSize = 0;
 
 	// ================================================================================================================
-	// SPECIAL MEMBER
+	// OPENCV LOADING CALLBACK MEMBER
 
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
@@ -335,9 +335,12 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				mFaceDetectionPurpose = FaceDetectionPurpose.RECOGNITION_TEST;
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
+
 				// TODO enable after implementing training service
 				// // create components required for recognition
 				// mRecognitionModule = new RecognitionModule();
+
+				// TODO ensure we have classifiers to load, abort otherwise
 			}
 
 			// AUTHENTICATE
@@ -345,9 +348,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				mFaceDetectionPurpose = FaceDetectionPurpose.AUTHENTICATION;
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
-				// TODO enable after implementing training service
-				// // create components required for recognition
-				// mRecognitionModule = new RecognitionModule();
+
+				// see test face rec for details
 			}
 
 			// RECORD NEW DATA

@@ -51,6 +51,10 @@
                   android:screenOrientation="landscape"
                   android:configChanges="keyboardHidden|orientation">
         </activity>
+        
+        <service android:name="at.usmile.auth.module.face.service.TrainingService"
+            android:exported="false"/>
+        
     </application>
 
 

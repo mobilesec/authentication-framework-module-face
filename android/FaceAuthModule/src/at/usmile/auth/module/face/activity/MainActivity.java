@@ -1,13 +1,18 @@
 package at.usmile.auth.module.face.activity;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import at.usmile.auth.module.face.R;
+import at.usmile.auth.module.face.service.TrainingService;
 
 /**
  * Entry point if user opens app to train or change settings (= if not called by
@@ -26,6 +31,12 @@ public class MainActivity extends Activity {
 	private static final int REQUEST_CODE_SETTINGS = 2;
 	private static final int REQUEST_CODE_FACE_DETECTION = 3;
 
+	/**
+	 * starts face authentication training in a separate service. Is deactivated
+	 * while training is ongoing.
+	 */
+	private Button mButtonRetrainClassifiers;
+
 	@Override
 	protected void onCreate(Bundle _savedInstanceState) {
 		super.onCreate(_savedInstanceState);
@@ -33,8 +44,8 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.layout_activity_face_main);
 
-		Button buttonTrain = (Button) findViewById(R.id.button_record_data);
-		buttonTrain.setOnClickListener(new OnClickListener() {
+		Button buttonRecordData = (Button) findViewById(R.id.button_record_data);
+		buttonRecordData.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
@@ -45,13 +56,17 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		Button buttonRetrainClassifiers = (Button) findViewById(R.id.button_retrain_classifiers);
-		buttonRetrainClassifiers.setOnClickListener(new OnClickListener() {
+		mButtonRetrainClassifiers = (Button) findViewById(R.id.button_retrain_classifiers);
+		// TODO eg use file in FS as lock for this button (only unlock button if
+		// file does not exist at app start)
+		mButtonRetrainClassifiers.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonRetrainClassifiers#OnClickListener()");
-				// TODO start background training service, block button until
-				// done
+				// trigger training service
+				Intent i = new Intent(MainActivity.this, TrainingService.class);
+				startService(i);
+				mButtonRetrainClassifiers.setEnabled(false);
 			}
 		});
 
@@ -86,6 +101,21 @@ public class MainActivity extends Activity {
 				startActivityForResult(i, REQUEST_CODE_SETTINGS);
 			}
 		});
+
+		// broadcast receiver
+		BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+			// Called when the BroadcastReceiver gets an Intent it's registered
+			// to receive
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				Log.d(TAG, "broadcastReceiver#onReceive()");
+				mButtonRetrainClassifiers.setEnabled(true);
+			}
+		};
+		// The filter's action is BROADCAST_ACTION
+		IntentFilter intentFilter = new IntentFilter(Statics.TRAINING_SERVICE_BROADCAST_ACTION);
+		// Registers the DownloadStateReceiver and its intent filters
+		LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
 	}
 
 	@Override
