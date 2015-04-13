@@ -36,7 +36,7 @@ public class FaceModuleUtil {
 		// the dialog
 		Builder builder = new AlertDialog.Builder(_context).setTitle(_context.getResources().getString(R.string.error)).setIcon(
 				android.R.drawable.ic_dialog_alert);
-		// default listener if we
+		// default listener if get none
 		if (_listener == null) {
 			_listener = new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {

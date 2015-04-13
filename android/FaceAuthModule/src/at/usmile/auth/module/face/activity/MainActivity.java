@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
 	// Intent requst codes
 	private static final int REQUEST_CODE_MANAGE_DATA = 1;
 	private static final int REQUEST_CODE_SETTINGS = 2;
-	private static final int REQUEST_CODE_TRAIN = 3;
+	private static final int REQUEST_CODE_FACE_DETECTION = 3;
 
 	@Override
 	protected void onCreate(Bundle _savedInstanceState) {
@@ -41,7 +41,7 @@ public class MainActivity extends Activity {
 				// switch to face rec.
 				Intent i = new Intent(MainActivity.this, FaceDetectionActivity.class);
 				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_RECORD_DATA);
-				startActivityForResult(i, REQUEST_CODE_TRAIN);
+				startActivityForResult(i, REQUEST_CODE_FACE_DETECTION);
 			}
 		});
 
@@ -64,7 +64,7 @@ public class MainActivity extends Activity {
 				// switch to face rec.
 				Intent i = new Intent(MainActivity.this, FaceDetectionActivity.class);
 				i.putExtra(Statics.FACE_DETECTION_PURPOSE, Statics.FACE_DETECTION_PURPOSE_RECOGNITION_TEST);
-				startActivityForResult(i, REQUEST_CODE_TRAIN);
+				startActivityForResult(i, REQUEST_CODE_FACE_DETECTION);
 			}
 		});
 

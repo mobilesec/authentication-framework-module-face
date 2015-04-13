@@ -15,18 +15,18 @@
         />
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/textview_recording_hint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/how_to_record_hint"
+        android:text="@string/how_to_record_hint_panshot"
         android:textColor="@android:color/holo_orange_light" />
 
     <TextView
         android:id="@+id/textview_identity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/textView1"
-        android:layout_below="@+id/textView1"
+        android:layout_alignLeft="@+id/textview_recording_hint"
+        android:layout_below="@+id/textview_recording_hint"
         android:text="@string/current_user"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/holo_orange_light" />

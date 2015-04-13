@@ -67,8 +67,6 @@ import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 import at.usmile.tuple.GenericTuple3;
 
-import com.google.common.base.Preconditions;
-
 /**
  * Does the face recording. If called from framework: gives back confidence that
  * it's the right user. If called for training: records and stores training
@@ -81,8 +79,6 @@ import com.google.common.base.Preconditions;
 public class FaceDetectionActivity extends Activity implements CvCameraViewListener2 {
 
 	// TODO replace all by LOGGER
-	// TODO disable discarding of "ask for user dialogs" when clicking on
-	// background
 
 	// ================================================================================================================
 	// MEMBERS
@@ -101,7 +97,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	private FaceDetectionPurpose mFaceDetectionPurpose = FaceDetectionPurpose.RECORD_DATA;
 
 	// OpenCV settings
-	private static final String TAG = "OCVSample::Activity";
+	private static final String TAG = FaceDetectionActivity.class.getSimpleName();
 	private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
 	public static final int JAVA_DETECTOR = 0;
 	public static final int NATIVE_DETECTOR = 1;
@@ -166,7 +162,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	 * after taking the first pic, so user does not have to press twice.
 	 */
 	private static final boolean USE_FRONTAL_ONLY = true;
-	// TODO extract to settings
+	// TODO extract to settings (use different FS locations for panshot and
+	// frontal only data)
 
 	// ================================================================================================================
 	// CAMVIEW MEMBERS
@@ -288,6 +285,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		}
 	};
 
+	private double tmp = 0;
+
 	// ================================================================================================================
 	// ANDROID METHODS
 
@@ -304,8 +303,14 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		setContentView(R.layout.layout_fragment_main_recording);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+		// for updating user in UI
 		textviewIdentity = (TextView) findViewById(R.id.textview_identity);
-		Preconditions.checkNotNull(textviewIdentity, "textviewIdentity is null.");
+
+		// fit recording hint to our approach
+		TextView textviewRecordingHint = (TextView) findViewById(R.id.textview_recording_hint);
+		if (USE_FRONTAL_ONLY) {
+			textviewRecordingHint.setText(R.string.how_to_record_hint_frontal);
+		}
 
 		// camview
 		mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.fd_activity_surface_view);
@@ -314,23 +319,25 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// mOpenCvCameraView.setRotation(90);
 		mOpenCvCameraView.setCvCameraViewListener(this);
 
-		OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback);
-
-		// TODO only if needed
-		mRecognitionModule = new RecognitionModule();
+		// load opencv
+		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, mLoaderCallback)) {
+			Log.e(TAG, "onCreate: cannot connect to opencv");
+		}
 
 		// get info from calling Activity
 		Bundle extras = getIntent().getExtras();
 
 		if (extras != null) {
 			String value = extras.getString(Statics.FACE_DETECTION_PURPOSE);
-			Toast.makeText(this, value, Toast.LENGTH_LONG).show();
 
 			// TEST FACE REC
 			if (value.equals(Statics.FACE_DETECTION_PURPOSE_RECOGNITION_TEST)) {
 				mFaceDetectionPurpose = FaceDetectionPurpose.RECOGNITION_TEST;
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
+				// TODO enable after implementing training service
+				// // create components required for recognition
+				// mRecognitionModule = new RecognitionModule();
 			}
 
 			// AUTHENTICATE
@@ -338,6 +345,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				mFaceDetectionPurpose = FaceDetectionPurpose.AUTHENTICATION;
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
+				// TODO enable after implementing training service
+				// // create components required for recognition
+				// mRecognitionModule = new RecognitionModule();
 			}
 
 			// RECORD NEW DATA
@@ -458,15 +468,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		SensorComponent.instance().addObserver(mPhotoGyroListener);
 
 		updateUiFromCurrentUser();
-
-		switch (mFaceDetectionPurpose) {
-			case RECOGNITION_TEST:
-				train();
-				break;
-
-			default:
-				break;
-		}
 	}
 
 	@Override
@@ -529,11 +530,21 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	}
 
 	private void startTakingPictures() {
-		if (mCurrentUser == null) {
-			Toast.makeText(this, getResources().getString(R.string.no_user_selected), Toast.LENGTH_SHORT).show();
+		Log.d(FaceDetectionActivity.class.getSimpleName(), "starting image taking...");
+		// ensure we really have a user
+		if (mFaceDetectionPurpose == FaceDetectionPurpose.RECORD_DATA && mCurrentUser == null) {
+			DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int whichButton) {
+				}
+			};
+			final Builder dialog = new AlertDialog.Builder(FaceDetectionActivity.this)
+					.setTitle(FaceDetectionActivity.this.getResources().getString(R.string.error))
+					.setMessage(FaceDetectionActivity.this.getResources().getString(R.string.no_user_selected))
+					.setPositiveButton(FaceDetectionActivity.this.getResources().getString(R.string.ok), listener);
+			dialog.show();
 			return;
 		}
-		Log.d(OldMainActivity.class.getSimpleName(), "starting image taking...");
+		// start stuff that we need for recording pictures
 		mIsTakingPictures = true;
 		mPhotoGyroListener.reset();
 		images.clear();
@@ -661,10 +672,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 				// LBP profile face does not seem to do too good atm, use
 				// haarcascades instead
-				// cascadeClassifier = ((MainActivity)
-				// FaceRecognitionActivity.this).mJavaDetector_LBPCascadeProfileface;
-				// detectionBasedTracker = ((MainActivity)
-				// FaceRecognitionActivity.this).mNativeDetector_LBPCascadeProfileface;
+				// cascadeClassifier = mJavaDetector_LBPCascadeProfileface;
+				// detectionBasedTracker =
+				// mNativeDetector_LBPCascadeProfileface;
 
 				cascadeClassifier = mJavaDetector_HaarCascadeProfileface;
 				detectionBasedTracker = mNativeDetector_HaarCascadeProfileface;
@@ -720,11 +730,13 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		return faces.toArray();
 	}
 
+	// TODO use those somewhere...
 	private void setMinFaceSize(float faceSize) {
 		mRelativeFaceSize = faceSize;
 		mAbsoluteFaceSize = 0;
 	}
 
+	// TODO use those somewhere...
 	private void setDetectorType(int type) {
 		if (mDetectorType != type) {
 			mDetectorType = type;
@@ -757,6 +769,19 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						break;
 
 					case RECOGNITION_TEST:
+						// ensure we have training data
+						// TODO move to service
+						switch (mFaceDetectionPurpose) {
+							case RECOGNITION_TEST:
+								if (mRecognitionModule == null) {
+									mRecognitionModule = new RecognitionModule();
+									train();
+								}
+								break;
+							default:
+								break;
+						}
+
 						// only use images in which faces where
 						// detected
 						List<PanshotImage> imagesWithFaces = FunUtil.filter(images, new FunFilter<PanshotImage>() {
@@ -770,11 +795,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							FunUtil.apply(imagesWithFaces, new FunApply<PanshotImage, PanshotImage>() {
 								@Override
 								public PanshotImage apply(PanshotImage panshotImage) {
-									// normalise the face's energy
-									// use convolution (kernel = 2D
-									// filter) to get image energy
-									// (brightness)
-									// distribution
+									// normalise the face's energy use
+									// convolution (kernel = 2D filter) to get
+									// image energy (brightness) distribution
 									// and normalise face with it
 									GenericTuple2<Mat, Mat> normalizedMatEnergy = PanshotUtil.normalizeMatEnergy(
 											panshotImage.grayFace, (int) (panshotImage.grayFace.rows() / SharedPrefs
@@ -783,8 +806,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 													.getImageEnergyNormalizationSubsamplingFactor(FaceDetectionActivity.this)),
 											255.0);
 									panshotImage.grayFace = normalizedMatEnergy.value1;
-									// DEBUG save energy image for
-									// review
+									// DEBUG save energy image for review
 									try {
 										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
 												.getString(R.string.app_media_directory_name));
@@ -868,11 +890,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			FunUtil.apply(trainingPanshotImages, new FunApply<PanshotImage, PanshotImage>() {
 				@Override
 				public PanshotImage apply(PanshotImage panshotImage) {
-					// normalise the face's energy
-					// use convolution (kernel = 2D filter) to get
-					// image energy (brightness) distribution and
-					// normalise
-					// face with it
+					// normalise the face's energy use convolution (kernel = 2D
+					// filter) to get image energy (brightness) distribution and
+					// normalise face with it
 					GenericTuple2<Mat, Mat> normalizedMatEnergy = PanshotUtil.normalizeMatEnergy(panshotImage.grayFace,
 							(int) (panshotImage.grayFace.rows() / subsamplingFactor),
 							(int) (panshotImage.grayFace.cols() / subsamplingFactor), 255.0);

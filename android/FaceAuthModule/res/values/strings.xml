@@ -23,7 +23,8 @@
     <string name="image_could_not_be_saved">A panshot image could not be saved (see log).</string>
     <string name="no_user_selected">No user selected - please select user first.</string>
     <string name="could_not_save_metadata_to_file">Error saving data to csv file (%1$s), aborting.</string>
-    <string name="how_to_record_hint">Press vol up or vol down to start/stop recording panshots. After starting the panshot, try to not rotate your head, only rotate the phone (look straight) and do a full 180 deg rotation of the phone around your head in about 4 seconds. You can review past panshots in DCIM/PanshotRecorder/.</string>
+    <string name="how_to_record_hint_panshot">Press vol up or vol down to start/stop recording panshots. After starting the panshot, try to not rotate your head, only rotate the phone (look straight) and do a full 180 deg rotation of the phone around your head in about 4 seconds. You can review past panshots in DCIM/PanshotRecorder/.</string>
+    <string name="how_to_record_hint_frontal">Press vol up or vol down to take a picture. You can review past pictures in DCIM/PanshotRecorder/.</string>
     <string name="current_user">Current user: %1$s</string>
     <string name="session_id">01</string>
     <string name="reddot_description">Recording dot</string>
