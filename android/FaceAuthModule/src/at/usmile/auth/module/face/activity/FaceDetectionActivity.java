@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,8 +63,7 @@ import at.usmile.panshot.User;
 import at.usmile.panshot.nu.DataUtil;
 import at.usmile.panshot.nu.FaceModuleUtil;
 import at.usmile.panshot.nu.RecognitionModule;
-import at.usmile.panshot.recognition.PCAUtil;
-import at.usmile.panshot.recognition.TrainingData;
+import at.usmile.panshot.recognition.svm.SvmClassifier;
 import at.usmile.panshot.util.MediaSaveUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
@@ -119,8 +117,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	private String[] mDetectorName;
 
 	private CameraBridgeViewBase mOpenCvCameraView;
-
-	private RecognitionModule mRecognitionModule;
 
 	// ================================================================================================================
 	// CAMVIEW STATICS
@@ -775,88 +771,98 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						break;
 
 					case RECOGNITION_TEST:
-						// ensure we have training data
+					case AUTHENTICATION:
+
 						// TODO move to service
-						switch (mFaceDetectionPurpose) {
-							case RECOGNITION_TEST:
-								if (mRecognitionModule == null) {
-									mRecognitionModule = new RecognitionModule();
-									train();
+						RecognitionModule mRecognitionModule = new RecognitionModule();
 
-									// TODO extract to e.g. media util
+						mRecognitionModule.train(this, ANGLE_DIFF_OF_PHOTOS, MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER);
 
-									// DEBUG serialize
-									FileOutputStream fileOutputStream = null;
-									ObjectOutputStream objectOutputStream = null;
-									try {
-										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-												.getString(R.string.app_classifier_directory_name));
-										if (!f.exists()) {
-											f.mkdir();
-										}
-										fileOutputStream = new FileOutputStream(new File(f, "test.ser"));
-										objectOutputStream = new ObjectOutputStream(fileOutputStream);
-										objectOutputStream.writeObject(mRecognitionModule);
-										objectOutputStream.close();
-										fileOutputStream.close();
-									} catch (IOException e) {
-										e.printStackTrace();
-									} finally {
-										if (objectOutputStream != null) {
-											try {
-												objectOutputStream.close();
-											} catch (IOException e) {
-											}
-										}
-										if (fileOutputStream != null) {
-											try {
-												fileOutputStream.close();
-											} catch (IOException e) {
-											}
-										}
-									}
+						// TODO extract to e.g. media util
 
-									// DEBUG deserialize
-									FileInputStream fileInputStream = null;
-									ObjectInputStream objectInputStream = null;
-									RecognitionModule r = null;
-									try {
-										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-												.getString(R.string.app_classifier_directory_name));
-										fileInputStream = new FileInputStream(new File(f, "test.ser"));
-										objectInputStream = new ObjectInputStream(fileInputStream);
-										r = (RecognitionModule) objectInputStream.readObject();
-										objectInputStream.close();
-										fileInputStream.close();
-									} catch (StreamCorruptedException e) {
-										e.printStackTrace();
-									} catch (IOException e) {
-										e.printStackTrace();
-									} catch (ClassNotFoundException e) {
-										e.printStackTrace();
-									} finally {
-										if (objectInputStream != null) {
-											try {
-												objectInputStream.close();
-											} catch (IOException e) {
-											}
-										}
-										if (fileInputStream != null) {
-											try {
-												fileInputStream.close();
-											} catch (IOException e) {
-											}
-										}
-									}
+						// DEBUG serialize
+						FileOutputStream fileOutputStream = null;
+						ObjectOutputStream objectOutputStream = null;
+						try {
+							File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+									.getString(R.string.app_classifier_directory_name));
+							if (!directory.exists()) {
+								directory.mkdir();
+							}
 
-									Log.d(TAG, "Before serialization: " + r);
-									Log.d(TAG, "Deserialized:         " + r);
+							// serialize recognition module
+							fileOutputStream = new FileOutputStream(new File(directory, "recognition_module.ser"));
+							objectOutputStream = new ObjectOutputStream(fileOutputStream);
+							objectOutputStream.writeObject(mRecognitionModule);
+							objectOutputStream.close();
+							fileOutputStream.close();
 
+							// store native data
+							for (SvmClassifier c : mRecognitionModule.getSvmClassifiers().values()) {
+								c.storeNativeData(directory);
+							}
+
+						} catch (IOException e) {
+							e.printStackTrace();
+						} finally {
+							if (objectOutputStream != null) {
+								try {
+									objectOutputStream.close();
+								} catch (IOException e) {
 								}
-								break;
-							default:
-								break;
+							}
+							if (fileOutputStream != null) {
+								try {
+									fileOutputStream.close();
+								} catch (IOException e) {
+								}
+							}
 						}
+
+						// DEBUG deserialize
+						FileInputStream fileInputStream = null;
+						ObjectInputStream objectInputStream = null;
+						RecognitionModule r = null;
+						try {
+							File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+									.getString(R.string.app_classifier_directory_name));
+
+							// deserialize
+							fileInputStream = new FileInputStream(new File(directory, "recognition_module.ser"));
+							objectInputStream = new ObjectInputStream(fileInputStream);
+							r = (RecognitionModule) objectInputStream.readObject();
+							objectInputStream.close();
+							fileInputStream.close();
+
+							// load native data
+							for (SvmClassifier c : r.getSvmClassifiers().values()) {
+								c.loadNativeData(directory);
+							}
+
+						} catch (StreamCorruptedException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							e.printStackTrace();
+						} catch (ClassNotFoundException e) {
+							e.printStackTrace();
+						} finally {
+							if (objectInputStream != null) {
+								try {
+									objectInputStream.close();
+								} catch (IOException e) {
+								}
+							}
+							if (fileInputStream != null) {
+								try {
+									fileInputStream.close();
+								} catch (IOException e) {
+								}
+							}
+						}
+
+						Log.d(TAG, "Before serialization: " + mRecognitionModule);
+						Log.d(TAG, "Deserialized:         " + r);
+						mRecognitionModule = r;
 
 						// only use images in which faces where
 						// detected
@@ -912,6 +918,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 								return _t;
 							}
 						});
+
+						// TODO test VS auth: split here
 						if (imagesWithFaces.size() > 0) {
 							// decide which recognition to use
 							switch (SharedPrefs.getRecognitionType(FaceDetectionActivity.this)) {
@@ -922,10 +930,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 													ANGLE_DIFF_OF_PHOTOS);
 									Toast.makeText(
 											this,
-											getResources().getString(
-													R.string.most_likely_user,
-													classificationResult.value1.getName() + " (" + classificationResult.value2
-															+ " votes)"), Toast.LENGTH_LONG).show();
+											getResources().getString(R.string.most_likely_user_knn,
+													classificationResult.value1.getName(), classificationResult.value2),
+											Toast.LENGTH_LONG).show();
 									break;
 								}
 
@@ -935,10 +942,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 													SharedPrefs.getAmountOfPcaFeatures(this), ANGLE_DIFF_OF_PHOTOS);
 									Toast.makeText(
 											this,
-											getResources().getString(
-													R.string.most_likely_user,
-													classificationResult.value1.getName() + " (" + classificationResult.value2
-															+ " votes)"), Toast.LENGTH_LONG).show();
+											getResources().getString(R.string.most_likely_user_svm,
+													classificationResult.value1.getName(), classificationResult.value2),
+											Toast.LENGTH_LONG).show();
 									break;
 								}
 
@@ -952,104 +958,5 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				images.clear();
 			}
 		}
-	}
-
-	public void train() {
-		// TODO put that in service
-
-		// load training data
-		Log.d(TAG, "loading training panshot images...");
-		List<PanshotImage> trainingPanshotImages = DataUtil.loadTrainingData(this);
-		// do image energy normalisation
-		if (SharedPrefs.useImageEnergyNormlization(this)) {
-			final float subsamplingFactor = SharedPrefs.getImageEnergyNormalizationSubsamplingFactor(this);
-			FunUtil.apply(trainingPanshotImages, new FunApply<PanshotImage, PanshotImage>() {
-				@Override
-				public PanshotImage apply(PanshotImage panshotImage) {
-					// normalise the face's energy use convolution (kernel = 2D
-					// filter) to get image energy (brightness) distribution and
-					// normalise face with it
-					GenericTuple2<Mat, Mat> normalizedMatEnergy = PanshotUtil.normalizeMatEnergy(panshotImage.grayFace,
-							(int) (panshotImage.grayFace.rows() / subsamplingFactor),
-							(int) (panshotImage.grayFace.cols() / subsamplingFactor), 255.0);
-					panshotImage.grayFace = normalizedMatEnergy.value1;
-					return panshotImage;
-				}
-			});
-		}
-		// separate images to perspectives...
-		Map<Integer, TrainingData> trainingdataPerClassifier = new HashMap<Integer, TrainingData>();
-		// ... and track amount of images per (subject, perspective)
-		Map<GenericTuple2<String, Integer>, Integer> imageAmount = new HashMap<GenericTuple2<String, Integer>, Integer>();
-		for (PanshotImage image : trainingPanshotImages) {
-			int classifierIndex = RecognitionModule.getClassifierIndexForAngle(image.angleValues[image.rec.angleIndex],
-					ANGLE_DIFF_OF_PHOTOS);
-			if (!trainingdataPerClassifier.containsKey(classifierIndex)) {
-				trainingdataPerClassifier.put(classifierIndex, new TrainingData());
-			}
-			trainingdataPerClassifier.get(classifierIndex).images.add(image);
-
-			// increase amount of images for this subject and
-			// perspective
-			// would not look so damn complex if Java had more FP...
-			GenericTuple2<String, Integer> subjectPerspectiveKey = new GenericTuple2(image.rec.user.getName(), classifierIndex);
-			if (!imageAmount.containsKey(subjectPerspectiveKey)) {
-				imageAmount.put(subjectPerspectiveKey, 0);
-			}
-			imageAmount.put(subjectPerspectiveKey, imageAmount.get(subjectPerspectiveKey) + 1);
-		}
-		for (GenericTuple2<String, Integer> key : imageAmount.keySet()) {
-			int amount = imageAmount.get(key);
-			if (amount < MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER) {
-				Toast.makeText(
-						this,
-						getResources().getString(R.string.too_less_training_data, key.value1, "" + amount, "" + key.value2,
-								"" + MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER), Toast.LENGTH_LONG).show();
-				return;
-			}
-		}
-
-		// RESIZE images as KNN, SVM etc need images that are of
-		// same size
-		for (TrainingData trainingData : trainingdataPerClassifier.values()) {
-			FunUtil.apply(trainingData.images, new FunApply<PanshotImage, PanshotImage>() {
-				@Override
-				public PanshotImage apply(PanshotImage _t) {
-					Imgproc.resize(_t.grayFace, _t.grayFace, new Size(SharedPrefs.getFaceWidth(FaceDetectionActivity.this),
-							SharedPrefs.getFaceHeight(FaceDetectionActivity.this)));
-					return _t;
-				}
-			});
-		}
-
-		// PCA
-		if (SharedPrefs.usePca(this)) {
-			for (TrainingData trainingData : trainingdataPerClassifier.values()) {
-				GenericTuple3<Mat, Mat, Mat> pcaComponents = PCAUtil.pcaCompute(trainingData.images);
-				trainingData.pcaMean = pcaComponents.value1;
-				trainingData.pcaEigenvectors = pcaComponents.value2;
-				trainingData.pcaProjections = pcaComponents.value3;
-			}
-		}
-
-		// we know we have sufficient training data for each
-		// classifier
-		switch (SharedPrefs.getRecognitionType(this)) {
-			case KNN:
-				mRecognitionModule.trainKnn(trainingdataPerClassifier, SharedPrefs.usePca(this),
-						SharedPrefs.getAmountOfPcaFeatures(this));
-				break;
-
-			case SVM:
-				mRecognitionModule.trainSvm(trainingdataPerClassifier, SharedPrefs.usePca(this),
-						SharedPrefs.getAmountOfPcaFeatures(this));
-
-			default:
-				break;
-		}
-
-		// TODO DEBUG serialize and load recognitiomodule
-
-		Log.i(TAG, "CameraFragment.update(): switching to recognition mode done.");
 	}
 }

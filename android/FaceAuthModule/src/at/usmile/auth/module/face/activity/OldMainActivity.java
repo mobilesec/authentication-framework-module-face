@@ -1455,7 +1455,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			Log.i(TAG, "votings: " + votings.toString());
 			Toast.makeText(
 					getActivity(),
-					getActivity().getResources().getString(R.string.most_likely_user,
+					getActivity().getResources().getString(R.string.most_likely_user_knn,
 							mostVotedUser.value1.getName() + " (" + mostVotedUser.value2 + " votes)"), Toast.LENGTH_LONG).show();
 		}
 
@@ -1464,7 +1464,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 				// ensure classifier exists
 				TrainingData trainingData = _trainingdataPerClassifier.get(classifierIndex);
 				if (!mSvmClassifiers.containsKey(classifierIndex)) {
-					mSvmClassifiers.put(classifierIndex, new SvmClassifier());
+					mSvmClassifiers.put(classifierIndex, new SvmClassifier(classifierIndex));
 				}
 				SvmClassifier classifier = mSvmClassifiers.get(classifierIndex);
 				classifier.train(trainingData, SharedPrefs.usePca(getActivity()),
@@ -1505,7 +1505,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			Log.i(TAG, "probabilities: " + probabilities.toString());
 			Toast.makeText(
 					getActivity(),
-					getActivity().getResources().getString(R.string.most_likely_user,
+					getActivity().getResources().getString(R.string.most_likely_user_svm,
 							mostVotedUser.value1.getName() + " (" + mostVotedUser.value2 + " votes)"), Toast.LENGTH_LONG).show();
 		}
 

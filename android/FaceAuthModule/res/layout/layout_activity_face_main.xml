@@ -11,10 +11,16 @@
         android:text="@string/trigger_training" />
 
     <Button
-        android:id="@+id/button_retrain_classifiers"
+        android:id="@+id/button_retrain_classifiers_background"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/retrain_classifiers" />
+        android:text="@string/retrain_classifiers_background" />
+
+    <Button
+        android:id="@+id/button_retrain_classifiers_foreground"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/retrain_classifiers_foreground" />
 
     <Button
         android:id="@+id/button_test_authentication"

@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
 	 * starts face authentication training in a separate service. Is deactivated
 	 * while training is ongoing.
 	 */
-	private Button mButtonRetrainClassifiers;
+	private Button mButtonRetrainClassifiersBackground;
 
 	@Override
 	protected void onCreate(Bundle _savedInstanceState) {
@@ -56,17 +56,25 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		mButtonRetrainClassifiers = (Button) findViewById(R.id.button_retrain_classifiers);
+		mButtonRetrainClassifiersBackground = (Button) findViewById(R.id.button_retrain_classifiers_background);
 		// TODO eg use file in FS as lock for this button (only unlock button if
 		// file does not exist at app start)
-		mButtonRetrainClassifiers.setOnClickListener(new OnClickListener() {
+		mButtonRetrainClassifiersBackground.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
-				Log.d(TAG, "buttonRetrainClassifiers#OnClickListener()");
+				Log.d(TAG, "mButtonRetrainClassifiersBackground#OnClickListener()");
 				// trigger training service
 				Intent i = new Intent(MainActivity.this, TrainingService.class);
 				startService(i);
-				mButtonRetrainClassifiers.setEnabled(false);
+				mButtonRetrainClassifiersBackground.setEnabled(false);
+			}
+		});
+
+		Button buttonRetrainClassifiersForeground = (Button) findViewById(R.id.button_retrain_classifiers_foreground);
+		buttonRetrainClassifiersForeground.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View _v) {
+				Log.d(TAG, "buttonRetrainClassifiersForeground#OnClickListener()");
 			}
 		});
 
@@ -109,7 +117,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				Log.d(TAG, "broadcastReceiver#onReceive()");
-				mButtonRetrainClassifiers.setEnabled(true);
+				mButtonRetrainClassifiersBackground.setEnabled(true);
 			}
 		};
 		// The filter's action is BROADCAST_ACTION

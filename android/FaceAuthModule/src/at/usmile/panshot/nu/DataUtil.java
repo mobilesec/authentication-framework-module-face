@@ -50,6 +50,14 @@ import au.com.bytecode.opencsv.CSVReader;
 public class DataUtil {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataUtil.class);
 
+	protected static FileFilter PANSHOT_USER_FOLDER_FILE_FILTER = new FileFilter() {
+		@Override
+		public boolean accept(File file) {
+			// we use directories that start with a letter
+			return file.isDirectory() && !file.getName().startsWith("_");
+		}
+	};
+
 	public static User getUserForName(Context _context, String name) throws NotFoundException, IOException {
 		for (User u : loadExistingUsers(_context)) {
 			if (u.getName().equalsIgnoreCase(name)) {
@@ -71,7 +79,7 @@ public class DataUtil {
 		File mediaDir = MediaSaveUtil.getMediaStorageDirectory(_context.getResources().getString(
 				R.string.app_media_directory_name));
 		// load from fs/db
-		File[] files = mediaDir.listFiles();
+		File[] files = mediaDir.listFiles(PANSHOT_USER_FOLDER_FILE_FILTER);
 		List<User> list = new ArrayList<User>();
 		for (File inFile : files) {
 			if (inFile.isDirectory()) {
@@ -274,13 +282,7 @@ public class DataUtil {
 		Log.d(DataUtil.class.getSimpleName(), "mediaDir=" + mediaDir.getAbsolutePath());
 		// load all images of all panshots of all users
 		List<PanshotImage> panshotImages = new ArrayList<PanshotImage>();
-		File[] userDirectories = mediaDir.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File file) {
-				// we use directories that start with a letter
-				return file.isDirectory() && !file.getName().startsWith("_");
-			}
-		});
+		File[] userDirectories = mediaDir.listFiles(PANSHOT_USER_FOLDER_FILE_FILTER);
 		for (File userDir : userDirectories) {
 			String[] userDirNameParts = userDir.getName().split("_");
 			User user = new User(userDirNameParts[1], userDirNameParts[0]);

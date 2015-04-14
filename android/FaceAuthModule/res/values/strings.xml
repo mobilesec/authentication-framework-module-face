@@ -36,7 +36,8 @@
     <string name="training_recognition">Classifier mode</string>
     <string name="switch_energy_normalization">Use image energy normalization</string>
     <string name="too_less_training_data">User %1$s has %2$s images for perspective %3$s, but %4$s are required.</string>
-    <string name="most_likely_user">Most likely user: %1$s</string>
+    <string name="most_likely_user_svm">Most likely user: %1$s (probability %2$1.2f)</string>
+    <string name="most_likely_user_knn">Most likely user: %1$s (%2$d votes)</string>
     <string name="use_image_energy_normalization">Use image energy normalization</string>
     <string name="image_energy_normalization_kernel_subsamling">Image energy normalization: kernel subsampling factor:</string>
     <string name="knn_k">KNN: the K parameter:</string>
@@ -56,7 +57,8 @@
     <string name="delete_identity">Delete identity</string>
     <string name="create_identity">ALPHA STATE: manage face authentication data via file system manager! \n\nCreate identity</string>
     <string name="test_face_authentication">Test face Authentication</string>
-    <string name="retrain_classifiers">Retrain classifiers using existing face data</string>
+    <string name="retrain_classifiers_background">Retrain classifiers using existing face data (background)</string>
+    <string name="retrain_classifiers_foreground">Retrain classifiers using existing face data (foreground)</string>
     <string name="really_delete_user">Really delete user %1$s?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
