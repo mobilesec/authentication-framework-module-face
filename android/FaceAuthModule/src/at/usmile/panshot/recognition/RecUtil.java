@@ -41,9 +41,10 @@ public class RecUtil {
 	}
 
 	/**
-	 * Takes K samples, each represented by MxN matrizes (e.g. image). Transforms each sample into a single row of features and
-	 * concatenates all samples to a single matrix. Returns a mat with K rows (each row represents a sample) and MxN columns (MxN
-	 * features per sample).
+	 * Takes K samples, each represented by MxN matrizes (e.g. image).
+	 * Transforms each sample into a single row of features and concatenates all
+	 * samples to a single matrix. Returns a mat with K rows (each row
+	 * represents a sample) and MxN columns (MxN features per sample).
 	 * 
 	 * @param _mats
 	 * @return

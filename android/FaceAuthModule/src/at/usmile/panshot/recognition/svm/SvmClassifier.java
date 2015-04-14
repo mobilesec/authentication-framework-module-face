@@ -25,6 +25,7 @@ import at.usmile.panshot.recognition.FaceClassifier;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.RecUtil;
 import at.usmile.panshot.recognition.TrainingData;
+import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 
 /**
@@ -42,12 +43,10 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 	// ================================================================================================================
 	// MEMBERS
 
-	/**
-	 * Folder this classifier stores his data to and loads it from that cannot
-	 * get serialized directly. this member gets serialized via the standart
-	 * serialization approach.
-	 */
-	private File mDataFolder = null;
+	private static final String FILE_PREFIX = "svm";
+
+	/** The angle index this classifier covers (e.g. 0 = frontal) */
+	private Integer mClassifierIndex = null;
 
 	/**
 	 * list of users so that classifier can state which user he recognised
@@ -66,6 +65,10 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 
 	// ================================================================================================================
 	// METHODS
+
+	public SvmClassifier(Integer _classifierIndex) {
+		mClassifierIndex = _classifierIndex;
+	}
 
 	/**
 	 * 
@@ -212,20 +215,32 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 		return new GenericTuple2<User, Map<User, Double>>(highestProbUser.value1, probabilities);
 	}
 
+	// @Override
+	// public String toString() {
+	// return "SvmClassifier [mClassifierIndex=" + mClassifierIndex +
+	// ", mUsers=" + mUsers + ", mSvmModel="
+	// + (mSvmModel == null ? "null" : "present") + ", mPcaMean=" + (mPcaMean ==
+	// null ? "null" : "present")
+	// + ", mPcaEigenvectors=" + (mPcaEigenvectors == null ? "null" : "present")
+	// + "]";
+	// }
+
 	@Override
 	public String toString() {
-		return "SvmClassifier [mUsers=" + mUsers + "]";
+		return "SvmClassifier [mClassifierIndex=" + mClassifierIndex + ", mUsers=" + mUsers + ", mSvmModel=" + mSvmModel
+				+ ", mPcaMean=" + mPcaMean + ", mPcaEigenvectors=" + mPcaEigenvectors + "]";
 	}
 
 	// ========================================================================================================================
 	// SERIALIZATION
 
-	public File getDataFolder() {
-		return mDataFolder;
-	}
-
-	public void setDataFolder(File _dataFolder) {
-		mDataFolder = _dataFolder;
+	/**
+	 * 
+	 * @param classifierIndex
+	 * @return
+	 */
+	protected static String getSerializationClassifierName(int classifierIndex) {
+		return "index_" + classifierIndex;
 	}
 
 	/**
@@ -234,6 +249,17 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		// out.defaultWriteObject();
 		out.writeObject(mUsers);
+		out.writeInt(mClassifierIndex);
+		if (mPcaMean == null) {
+			out.writeObject(null);
+		} else {
+			out.writeObject(PanshotUtil.matToMapFloat(mPcaMean));
+		}
+		if (mPcaEigenvectors == null) {
+			out.writeObject(null);
+		} else {
+			out.writeObject(PanshotUtil.matToMapFloat(mPcaEigenvectors));
+		}
 	}
 
 	/**
@@ -243,47 +269,48 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		// in.defaultReadObject();
 		mUsers = (List<User>) in.readObject();
+		mClassifierIndex = in.readInt();
+		Object tmp = in.readObject();
+		if (tmp != null) {
+			mPcaMean = PanshotUtil.matFromMapFloat((Map<String, Object>) tmp);
+		}
+		tmp = in.readObject();
+		if (tmp != null) {
+			mPcaEigenvectors = PanshotUtil.matFromMapFloat((Map<String, Object>) tmp);
+		}
 	}
 
-	// public static SvmClassifier deserialize(SvmClassifier _debug, File
-	// _users) throws StreamCorruptedException, IOException,
-	// ClassNotFoundException {
-	// // SvmClassifier c = new SvmClassifier();
-	// SvmClassifier c = _debug;
-	//
-	// // load users
-	// FileInputStream fileInputStream = null;
-	// ObjectInputStream objectInputStream = null;
-	// try {
-	// fileInputStream = new FileInputStream(_users);
-	// objectInputStream = new ObjectInputStream(fileInputStream);
-	// c.mUsers = (List<User>) objectInputStream.readObject();
-	// } finally {
-	// if (objectInputStream != null) {
-	// objectInputStream.close();
-	// }
-	// if (fileInputStream != null) {
-	// fileInputStream.close();
-	// }
-	// }
-	// return c;
-	// }
-	//
-	// public void store(File _users) throws IOException {
-	// // store users
-	// FileOutputStream fileOutputStream = null;
-	// ObjectOutputStream objectOutputStream = null;
-	// try {
-	// fileOutputStream = new FileOutputStream(_users);
-	// objectOutputStream = new ObjectOutputStream(fileOutputStream);
-	// objectOutputStream.writeObject(mUsers);
-	// } finally {
-	// if (objectOutputStream != null) {
-	// objectOutputStream.close();
-	// }
-	// if (fileOutputStream != null) {
-	// fileOutputStream.close();
-	// }
-	// }
-	// }
+	/**
+	 * Stores native data (OpenCV data) to the filesystem. This is intended to
+	 * be called during deserialization to load those parts of classifiers that
+	 * can't be persisted through Java serialization.
+	 * 
+	 * @throws IOException
+	 */
+	public void storeNativeData(File _folder) throws IOException {
+		svm.svm_save_model(
+				new File(_folder, FILE_PREFIX + "_model_" + getSerializationClassifierName(mClassifierIndex)).getAbsolutePath()
+						+ ".bin", mSvmModel);
+	}
+
+	/**
+	 * Loads native data (OpenCV data) from the filesystem. This is intended to
+	 * be called during deserialization to load those parts of classifiers that
+	 * can't be persisted through Java serialization.
+	 * 
+	 * @throws IOException
+	 */
+	public void loadNativeData(File _folder) throws IOException {
+		mSvmModel = svm.svm_load_model(new File(_folder, FILE_PREFIX + "_model_"
+				+ getSerializationClassifierName(mClassifierIndex)).getAbsolutePath()
+				+ ".bin");
+	}
+
+	public Integer getClassifierIndex() {
+		return mClassifierIndex;
+	}
+
+	public void setClassifierIndex(Integer classifierIndex) {
+		this.mClassifierIndex = classifierIndex;
+	}
 }

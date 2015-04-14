@@ -103,7 +103,8 @@ public class RecognitionModule implements Serializable {
 			// ensure classifier exists
 			TrainingData trainingData = _trainingdataPerClassifier.get(classifierIndex);
 			if (!mSvmClassifiers.containsKey(classifierIndex)) {
-				mSvmClassifiers.put(classifierIndex, new SvmClassifier());
+				SvmClassifier c = new SvmClassifier(classifierIndex);
+				mSvmClassifiers.put(classifierIndex, c);
 			}
 			SvmClassifier classifier = mSvmClassifiers.get(classifierIndex);
 			classifier.train(trainingData, _usePca, _pcaAmountOfFeatures);
@@ -141,6 +142,22 @@ public class RecognitionModule implements Serializable {
 		}
 		LOGGER.info("probabilities: " + probabilities.toString());
 		return new GenericTuple3<User, Double, Map<User, Double>>(mostVotedUser.value1, mostVotedUser.value2, probabilities);
+	}
+
+	public Map<Integer, SvmClassifier> getSvmClassifiers() {
+		return mSvmClassifiers;
+	}
+
+	public void setSvmClassifiers(Map<Integer, SvmClassifier> _svmClassifiers) {
+		mSvmClassifiers = _svmClassifiers;
+	}
+
+	public Map<Integer, KnnClassifier> getKnnClassifiers() {
+		return mKnnClassifiers;
+	}
+
+	public void setKnnClassifiers(Map<Integer, KnnClassifier> _knnClassifiers) {
+		mKnnClassifiers = _knnClassifiers;
 	}
 
 	@Override

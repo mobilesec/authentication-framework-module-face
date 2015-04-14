@@ -66,6 +66,7 @@ import at.usmile.panshot.nu.FaceModuleUtil;
 import at.usmile.panshot.nu.RecognitionModule;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.TrainingData;
+import at.usmile.panshot.recognition.svm.SvmClassifier;
 import at.usmile.panshot.util.MediaSaveUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
@@ -781,6 +782,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							case RECOGNITION_TEST:
 								if (mRecognitionModule == null) {
 									mRecognitionModule = new RecognitionModule();
+
 									train();
 
 									// TODO extract to e.g. media util
@@ -789,16 +791,24 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 									FileOutputStream fileOutputStream = null;
 									ObjectOutputStream objectOutputStream = null;
 									try {
-										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-												.getString(R.string.app_classifier_directory_name));
-										if (!f.exists()) {
-											f.mkdir();
+										File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this
+												.getResources().getString(R.string.app_classifier_directory_name));
+										if (!directory.exists()) {
+											directory.mkdir();
 										}
-										fileOutputStream = new FileOutputStream(new File(f, "test.ser"));
+
+										// serialize recognition module
+										fileOutputStream = new FileOutputStream(new File(directory, "recognition_module.ser"));
 										objectOutputStream = new ObjectOutputStream(fileOutputStream);
 										objectOutputStream.writeObject(mRecognitionModule);
 										objectOutputStream.close();
 										fileOutputStream.close();
+
+										// store native data
+										for (SvmClassifier c : mRecognitionModule.getSvmClassifiers().values()) {
+											c.storeNativeData(directory);
+										}
+
 									} catch (IOException e) {
 										e.printStackTrace();
 									} finally {
@@ -821,13 +831,21 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 									ObjectInputStream objectInputStream = null;
 									RecognitionModule r = null;
 									try {
-										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-												.getString(R.string.app_classifier_directory_name));
-										fileInputStream = new FileInputStream(new File(f, "test.ser"));
+										File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this
+												.getResources().getString(R.string.app_classifier_directory_name));
+
+										// deserialize
+										fileInputStream = new FileInputStream(new File(directory, "recognition_module.ser"));
 										objectInputStream = new ObjectInputStream(fileInputStream);
 										r = (RecognitionModule) objectInputStream.readObject();
 										objectInputStream.close();
 										fileInputStream.close();
+
+										// load native data
+										for (SvmClassifier c : r.getSvmClassifiers().values()) {
+											c.loadNativeData(directory);
+										}
+
 									} catch (StreamCorruptedException e) {
 										e.printStackTrace();
 									} catch (IOException e) {
@@ -849,8 +867,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 										}
 									}
 
-									Log.d(TAG, "Before serialization: " + r);
+									Log.d(TAG, "Before serialization: " + mRecognitionModule);
 									Log.d(TAG, "Deserialized:         " + r);
+									mRecognitionModule = r;
 
 								}
 								break;

@@ -1464,7 +1464,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 				// ensure classifier exists
 				TrainingData trainingData = _trainingdataPerClassifier.get(classifierIndex);
 				if (!mSvmClassifiers.containsKey(classifierIndex)) {
-					mSvmClassifiers.put(classifierIndex, new SvmClassifier());
+					mSvmClassifiers.put(classifierIndex, new SvmClassifier(classifierIndex));
 				}
 				SvmClassifier classifier = mSvmClassifiers.get(classifierIndex);
 				classifier.train(trainingData, SharedPrefs.usePca(getActivity()),
