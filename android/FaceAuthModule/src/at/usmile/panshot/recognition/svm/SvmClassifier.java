@@ -1,5 +1,10 @@
 package at.usmile.panshot.recognition.svm;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +21,7 @@ import org.opencv.core.Mat;
 import android.util.Log;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.panshot.User;
+import at.usmile.panshot.recognition.FaceClassifier;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.RecUtil;
 import at.usmile.panshot.recognition.TrainingData;
@@ -23,18 +29,30 @@ import at.usmile.tuple.GenericTuple2;
 
 /**
  * Documentation of the used LIBSVM library for Android:
- * http://grepcode.com/snapshot/repo1.maven.org/maven2/tw.edu.ntu.csie/libsvm/3.1/
+ * http://grepcode.com/snapshot
+ * /repo1.maven.org/maven2/tw.edu.ntu.csie/libsvm/3.1/
  * 
  * @author Rainhard Findling
  * @date 7 Apr 2014
  * @version 1
  */
-public class SvmClassifier {
+public class SvmClassifier implements FaceClassifier, Serializable {
+	private static final long serialVersionUID = 1L;
 
 	// ================================================================================================================
 	// MEMBERS
 
-	/** list of users so that classifier can state which user he recognised during classification. */
+	/**
+	 * Folder this classifier stores his data to and loads it from that cannot
+	 * get serialized directly. this member gets serialized via the standart
+	 * serialization approach.
+	 */
+	private File mDataFolder = null;
+
+	/**
+	 * list of users so that classifier can state which user he recognised
+	 * during classification.
+	 */
 	private List<User> mUsers = new ArrayList<User>();
 
 	/** the actual SVM classifier. null if not trained yet. */
@@ -53,11 +71,14 @@ public class SvmClassifier {
 	 * 
 	 * @param _trainingData
 	 * @param _usePca
-	 *            if PCA should be used to transform features before training the classifier.
+	 *            if PCA should be used to transform features before training
+	 *            the classifier.
 	 * @param _amountOfPcaFeatures
-	 *            the amount N of transformed features to be used for training and classification. only the N most important
-	 *            features will be used. all features are used if set to -1.
+	 *            the amount N of transformed features to be used for training
+	 *            and classification. only the N most important features will be
+	 *            used. all features are used if set to -1.
 	 */
+	@Override
 	public void train(TrainingData _trainingData, boolean _usePca, int _pcaAmountOfFeatures) {
 		if (_pcaAmountOfFeatures < 1) {
 			throw new RuntimeException("_pcaAmountOfFeatures must be at least of size 1.");
@@ -120,11 +141,6 @@ public class SvmClassifier {
 
 		// train the classifier with all the images from the current angel
 		mSvmModel = svm.svm_train(svmProblem, getSvmParams());
-		// DEBUG
-		int[] label = mSvmModel.label;
-		int nr_class = mSvmModel.nr_class;
-		int[] nSV = mSvmModel.nSV;
-		int tmp = 0;
 	}
 
 	// get the SVM parameters
@@ -195,4 +211,79 @@ public class SvmClassifier {
 		}
 		return new GenericTuple2<User, Map<User, Double>>(highestProbUser.value1, probabilities);
 	}
+
+	@Override
+	public String toString() {
+		return "SvmClassifier [mUsers=" + mUsers + "]";
+	}
+
+	// ========================================================================================================================
+	// SERIALIZATION
+
+	public File getDataFolder() {
+		return mDataFolder;
+	}
+
+	public void setDataFolder(File _dataFolder) {
+		mDataFolder = _dataFolder;
+	}
+
+	/**
+	 * We need custom serialization as we can't serialize opencv members.
+	 */
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		// out.defaultWriteObject();
+		out.writeObject(mUsers);
+	}
+
+	/**
+	 * We need custom serialization as we can't serialize opencv members.
+	 */
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		// in.defaultReadObject();
+		mUsers = (List<User>) in.readObject();
+	}
+
+	// public static SvmClassifier deserialize(SvmClassifier _debug, File
+	// _users) throws StreamCorruptedException, IOException,
+	// ClassNotFoundException {
+	// // SvmClassifier c = new SvmClassifier();
+	// SvmClassifier c = _debug;
+	//
+	// // load users
+	// FileInputStream fileInputStream = null;
+	// ObjectInputStream objectInputStream = null;
+	// try {
+	// fileInputStream = new FileInputStream(_users);
+	// objectInputStream = new ObjectInputStream(fileInputStream);
+	// c.mUsers = (List<User>) objectInputStream.readObject();
+	// } finally {
+	// if (objectInputStream != null) {
+	// objectInputStream.close();
+	// }
+	// if (fileInputStream != null) {
+	// fileInputStream.close();
+	// }
+	// }
+	// return c;
+	// }
+	//
+	// public void store(File _users) throws IOException {
+	// // store users
+	// FileOutputStream fileOutputStream = null;
+	// ObjectOutputStream objectOutputStream = null;
+	// try {
+	// fileOutputStream = new FileOutputStream(_users);
+	// objectOutputStream = new ObjectOutputStream(fileOutputStream);
+	// objectOutputStream.writeObject(mUsers);
+	// } finally {
+	// if (objectOutputStream != null) {
+	// objectOutputStream.close();
+	// }
+	// if (fileOutputStream != null) {
+	// fileOutputStream.close();
+	// }
+	// }
+	// }
 }

@@ -5,22 +5,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.opencv.core.Mat;
+
 import at.usmile.panshot.PanshotImage;
 import at.usmile.panshot.User;
+import at.usmile.panshot.recognition.FaceClassifier;
 import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.TrainingData;
 import at.usmile.tuple.GenericTuple2;
 
-public class KnnClassifier {
+public class KnnClassifier implements FaceClassifier {
 
 	// ================================================================================================================
 	// MEMBERS
 
-	private TrainingData mTrainingData = null;
+	// private TrainingData mTrainingData = null;
+	private List<PanshotImage> mImages;
+	private Mat mPcaEigenvectors;
+	private Mat mPcaMean;
+	private Mat mPcaProjections;
 
 	// ================================================================================================================
 	// METHODS
 
+	@Override
 	public void train(TrainingData _trainingData, boolean _usePca, int _pcaAmountOfFeatures) {
 		// check all train images contain users
 		for (PanshotImage i : _trainingData.images) {
@@ -28,7 +36,13 @@ public class KnnClassifier {
 				throw new RuntimeException("Not all training images contain training data (user information).");
 			}
 		}
-		mTrainingData = _trainingData;
+		// mTrainingData = _trainingData;
+
+		// save data that we need later
+		mImages = _trainingData.images;
+		mPcaEigenvectors = _trainingData.pcaEigenvectors;
+		mPcaMean = _trainingData.pcaMean;
+		mPcaProjections = _trainingData.pcaProjections;
 	}
 
 	/**
@@ -68,7 +82,7 @@ public class KnnClassifier {
 		// (imageIndex,distance)
 		List<GenericTuple2<PanshotImage, Double>> neighbours = new ArrayList<GenericTuple2<PanshotImage, Double>>();
 		GenericTuple2<PanshotImage, Double> mostDistantNeightbour = null;
-		for (PanshotImage image : mTrainingData.images) {
+		for (PanshotImage image : mImages) {
 			// calc distance
 			double distance = 0;
 			if (!_usePca) {
@@ -82,7 +96,7 @@ public class KnnClassifier {
 				}
 			} else {
 				// project data into eigenspace
-				_image.pcaFace = PCAUtil.pcaProject(_image, mTrainingData.pcaMean, mTrainingData.pcaEigenvectors);
+				_image.pcaFace = PCAUtil.pcaProject(_image, mPcaMean, mPcaEigenvectors);
 				// measure distance in eigenspace
 				for (int row = 0; row < image.pcaFace.rows() && row < _pcaAmountOfFeatures; row++) {
 					for (int col = 0; col < image.pcaFace.cols(); col++) {
@@ -96,7 +110,8 @@ public class KnnClassifier {
 			if (neighbours.size() < _k) {
 				neighbours.add(n);
 				if (mostDistantNeightbour == null || mostDistantNeightbour.value2 < n.value2) {
-					// as long as we don't have a full neighbourhood: remember most distant neighbour
+					// as long as we don't have a full neighbourhood: remember
+					// most distant neighbour
 					mostDistantNeightbour = n;
 				}
 			} else if (mostDistantNeightbour.value2 > n.value2) {

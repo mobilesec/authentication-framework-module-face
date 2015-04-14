@@ -271,13 +271,14 @@ public class DataUtil {
 					Toast.LENGTH_LONG).show();
 			return null;
 		}
-		Log.d(OldMainActivity.class.getSimpleName(), "mediaDir=" + mediaDir.getAbsolutePath());
+		Log.d(DataUtil.class.getSimpleName(), "mediaDir=" + mediaDir.getAbsolutePath());
 		// load all images of all panshots of all users
 		List<PanshotImage> panshotImages = new ArrayList<PanshotImage>();
 		File[] userDirectories = mediaDir.listFiles(new FileFilter() {
 			@Override
 			public boolean accept(File file) {
-				return file.isDirectory();
+				// we use directories that start with a letter
+				return file.isDirectory() && !file.getName().startsWith("_");
 			}
 		});
 		for (File userDir : userDirectories) {

@@ -23,6 +23,9 @@ import at.usmile.panshot.SharedPrefs;
  * @version 1
  */
 public class SettingsActivity extends Activity {
+	// TODO onChange of certain settings: notify user and delete classifiers
+	// TODO think of case in which training is ongoing (lock settings for that
+	// time?)
 
 	private final String TAG = "SettingsActivity";
 

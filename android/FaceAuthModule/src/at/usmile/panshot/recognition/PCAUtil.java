@@ -14,6 +14,13 @@ import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.tuple.GenericTuple3;
 
+/**
+ * Principal Component Analysis (PCA) related operations.
+ * 
+ * @author Rainhard Findling
+ * @date 13 Apr 2015
+ * @version 1
+ */
 public class PCAUtil {
 
 	// ================================================================================================================
@@ -23,11 +30,13 @@ public class PCAUtil {
 	// METHODS
 
 	/**
-	 * PCA transformation of pan shot images. the indexing of images and pca transformed features is the same (e.g. image nr 1 in
-	 * _images corresponds to the transformed features of row 1).
+	 * PCA transformation of pan shot images. the indexing of images and pca
+	 * transformed features is the same (e.g. image nr 1 in _images corresponds
+	 * to the transformed features of row 1).
 	 * 
 	 * @param _images
-	 * @return in this order: mean of data, eigenvectors of data, projections (transformations) of data into eigenspace.
+	 * @return in this order: mean of data, eigenvectors of data, projections
+	 *         (transformations) of data into eigenspace.
 	 */
 	public static GenericTuple3<Mat, Mat, Mat> pcaCompute(List<PanshotImage> _images) {
 		// concatenate all samples to rows of a single Mat
@@ -40,7 +49,9 @@ public class PCAUtil {
 		Mat samplesMat = RecUtil.transformImagesToFeatureMatrix(samplesList);
 		// // DEBUG
 		// try {
-		// MediaSaveUtil.saveMatToJpgFile(new File("/mnt/sdcard/DCIM/PanshotRecognition/pcaSamplesMat.jpg"), samplesMat);
+		// MediaSaveUtil.saveMatToJpgFile(new
+		// File("/mnt/sdcard/DCIM/PanshotRecognition/pcaSamplesMat.jpg"),
+		// samplesMat);
 		// } catch (IOException e) {
 		// e.printStackTrace();
 		// }
@@ -67,9 +78,14 @@ public class PCAUtil {
 		// mean.convertTo(mean, CvType.CV_8UC1);
 		// eigenvectors.convertTo(eigenvectors, CvType.CV_8UC1);
 		// result.convertTo(result, CvType.CV_8UC1);
-		// MediaSaveUtil.saveMatToJpgFile(new File("/mnt/sdcard/DCIM/PanshotRecognition/pcaMean.jpg"), mean);
-		// MediaSaveUtil.saveMatToJpgFile(new File("/mnt/sdcard/DCIM/PanshotRecognition/pcaEigenvectors.jpg"), eigenvectors);
-		// MediaSaveUtil.saveMatToJpgFile(new File("/mnt/sdcard/DCIM/PanshotRecognition/pcaProjections.jpg"), result);
+		// MediaSaveUtil.saveMatToJpgFile(new
+		// File("/mnt/sdcard/DCIM/PanshotRecognition/pcaMean.jpg"), mean);
+		// MediaSaveUtil.saveMatToJpgFile(new
+		// File("/mnt/sdcard/DCIM/PanshotRecognition/pcaEigenvectors.jpg"),
+		// eigenvectors);
+		// MediaSaveUtil.saveMatToJpgFile(new
+		// File("/mnt/sdcard/DCIM/PanshotRecognition/pcaProjections.jpg"),
+		// result);
 		// // ATTENTION cannot proceed further now as image have been converted
 		// } catch (IOException e) {
 		// e.printStackTrace();

@@ -13,6 +13,7 @@
     <string name="toast_username_empty">Please enter a username.</string>
     <string name="sd_card_not_available">SD card not available (not mounted?).</string>
     <string name="app_media_directory_name">PanshotRecognition</string>
+    <string name="app_classifier_directory_name">PanshotRecognition/_classifiers</string>
     <string name="media_directory_not_found_exception">Media directory was not found (see log).</string>
     <string name="media_directory_cannot_be_created">Media directory cannot be created (see log).</string>
     <string name="user_directory_cannot_be_created">User directory cannot be created (see log).</string>

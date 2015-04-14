@@ -1,9 +1,13 @@
 package at.usmile.auth.module.face.activity;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -778,6 +782,76 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 								if (mRecognitionModule == null) {
 									mRecognitionModule = new RecognitionModule();
 									train();
+
+									// TODO extract to e.g. media util
+
+									// DEBUG serialize
+									FileOutputStream fileOutputStream = null;
+									ObjectOutputStream objectOutputStream = null;
+									try {
+										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+												.getString(R.string.app_classifier_directory_name));
+										if (!f.exists()) {
+											f.mkdir();
+										}
+										fileOutputStream = new FileOutputStream(new File(f, "test.ser"));
+										objectOutputStream = new ObjectOutputStream(fileOutputStream);
+										objectOutputStream.writeObject(mRecognitionModule);
+										objectOutputStream.close();
+										fileOutputStream.close();
+									} catch (IOException e) {
+										e.printStackTrace();
+									} finally {
+										if (objectOutputStream != null) {
+											try {
+												objectOutputStream.close();
+											} catch (IOException e) {
+											}
+										}
+										if (fileOutputStream != null) {
+											try {
+												fileOutputStream.close();
+											} catch (IOException e) {
+											}
+										}
+									}
+
+									// DEBUG deserialize
+									FileInputStream fileInputStream = null;
+									ObjectInputStream objectInputStream = null;
+									RecognitionModule r = null;
+									try {
+										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+												.getString(R.string.app_classifier_directory_name));
+										fileInputStream = new FileInputStream(new File(f, "test.ser"));
+										objectInputStream = new ObjectInputStream(fileInputStream);
+										r = (RecognitionModule) objectInputStream.readObject();
+										objectInputStream.close();
+										fileInputStream.close();
+									} catch (StreamCorruptedException e) {
+										e.printStackTrace();
+									} catch (IOException e) {
+										e.printStackTrace();
+									} catch (ClassNotFoundException e) {
+										e.printStackTrace();
+									} finally {
+										if (objectInputStream != null) {
+											try {
+												objectInputStream.close();
+											} catch (IOException e) {
+											}
+										}
+										if (fileInputStream != null) {
+											try {
+												fileInputStream.close();
+											} catch (IOException e) {
+											}
+										}
+									}
+
+									Log.d(TAG, "Before serialization: " + r);
+									Log.d(TAG, "Deserialized:         " + r);
+
 								}
 								break;
 							default:
@@ -964,7 +1038,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			case KNN:
 				mRecognitionModule.trainKnn(trainingdataPerClassifier, SharedPrefs.usePca(this),
 						SharedPrefs.getAmountOfPcaFeatures(this));
-				// trainJavaCv(trainingdataPerClassifier);
 				break;
 
 			case SVM:
@@ -974,7 +1047,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			default:
 				break;
 		}
-		// throw new RuntimeException("blaaa");
+
+		// TODO DEBUG serialize and load recognitiomodule
+
 		Log.i(TAG, "CameraFragment.update(): switching to recognition mode done.");
 	}
 }

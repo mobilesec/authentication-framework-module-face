@@ -1,5 +1,9 @@
 package at.usmile.panshot.nu;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +21,9 @@ import at.usmile.panshot.recognition.svm.SvmClassifier;
 import at.usmile.tuple.GenericTuple2;
 import at.usmile.tuple.GenericTuple3;
 
-public class RecognitionModule {
+public class RecognitionModule implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(RecognitionModule.class);
 
 	// ================================================================================================================
@@ -137,4 +143,21 @@ public class RecognitionModule {
 		return new GenericTuple3<User, Double, Map<User, Double>>(mostVotedUser.value1, mostVotedUser.value2, probabilities);
 	}
 
+	@Override
+	public String toString() {
+		return "RecognitionModule [mSvmClassifiers=" + mSvmClassifiers + "]";
+	}
+
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		// out.defaultWriteObject();
+		out.writeObject(mSvmClassifiers);
+		// TODO knn
+	}
+
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		// in.defaultReadObject();
+		mSvmClassifiers = (Map<Integer, SvmClassifier>) in.readObject();
+		// TODO knn
+	}
 }

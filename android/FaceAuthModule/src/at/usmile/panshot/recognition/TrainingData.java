@@ -7,6 +7,13 @@ import org.opencv.core.Mat;
 
 import at.usmile.panshot.PanshotImage;
 
+/**
+ * Aggregated training data.
+ * 
+ * @author Rainhard Findling
+ * @date 13 Apr 2015
+ * @version 1
+ */
 public class TrainingData {
 
 	// ================================================================================================================

@@ -32,8 +32,6 @@ public class TrainingService extends IntentService {
 	protected void onHandleIntent(Intent workIntent) {
 		Log.d(TAG, "TrainingService#onHandleIntent()");
 
-		// Gets data from the incoming Intent
-		String dataString = workIntent.getDataString();
 		// Do work here, based on the contents of dataString
 
 		// send info that training has finished
