@@ -6,7 +6,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -776,48 +775,53 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						// TODO move to service
 						RecognitionModule mRecognitionModule = new RecognitionModule();
 
-						mRecognitionModule.train(this, ANGLE_DIFF_OF_PHOTOS, MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER);
-
-						// TODO extract to e.g. media util
-
-						// DEBUG serialize
-						FileOutputStream fileOutputStream = null;
-						ObjectOutputStream objectOutputStream = null;
-						try {
-							File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-									.getString(R.string.app_classifier_directory_name));
-							if (!directory.exists()) {
-								directory.mkdir();
-							}
-
-							// serialize recognition module
-							fileOutputStream = new FileOutputStream(new File(directory, "recognition_module.ser"));
-							objectOutputStream = new ObjectOutputStream(fileOutputStream);
-							objectOutputStream.writeObject(mRecognitionModule);
-							objectOutputStream.close();
-							fileOutputStream.close();
-
-							// store native data
-							for (SvmClassifier c : mRecognitionModule.getSvmClassifiers().values()) {
-								c.storeNativeData(directory);
-							}
-
-						} catch (IOException e) {
-							e.printStackTrace();
-						} finally {
-							if (objectOutputStream != null) {
-								try {
-									objectOutputStream.close();
-								} catch (IOException e) {
-								}
-							}
-							if (fileOutputStream != null) {
-								try {
-									fileOutputStream.close();
-								} catch (IOException e) {
-								}
-							}
-						}
+						// mRecognitionModule.train(this, ANGLE_DIFF_OF_PHOTOS,
+						// MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER);
+						//
+						// // TODO extract to e.g. media util
+						//
+						// // DEBUG serialize
+						// FileOutputStream fileOutputStream = null;
+						// ObjectOutputStream objectOutputStream = null;
+						// try {
+						// File directory =
+						// MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+						// .getString(R.string.app_classifier_directory_name));
+						// if (!directory.exists()) {
+						// directory.mkdir();
+						// }
+						//
+						// // serialize recognition module
+						// fileOutputStream = new FileOutputStream(new
+						// File(directory, "recognition_module.ser"));
+						// objectOutputStream = new
+						// ObjectOutputStream(fileOutputStream);
+						// objectOutputStream.writeObject(mRecognitionModule);
+						// objectOutputStream.close();
+						// fileOutputStream.close();
+						//
+						// // store native data
+						// for (SvmClassifier c :
+						// mRecognitionModule.getSvmClassifiers().values()) {
+						// c.storeNativeData(directory);
+						// }
+						//
+						// } catch (IOException e) {
+						// e.printStackTrace();
+						// } finally {
+						// if (objectOutputStream != null) {
+						// try {
+						// objectOutputStream.close();
+						// } catch (IOException e) {
+						// }
+						// }
+						// if (fileOutputStream != null) {
+						// try {
+						// fileOutputStream.close();
+						// } catch (IOException e) {
+						// }
+						// }
+						// }
 
 						// DEBUG deserialize
 						FileInputStream fileInputStream = null;
@@ -838,7 +842,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							for (SvmClassifier c : r.getSvmClassifiers().values()) {
 								c.loadNativeData(directory);
 							}
-
 						} catch (StreamCorruptedException e) {
 							e.printStackTrace();
 						} catch (IOException e) {
