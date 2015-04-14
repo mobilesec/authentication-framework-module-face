@@ -1,18 +1,31 @@
 package at.usmile.auth.module.face.activity;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.opencv.android.InstallCallbackInterface;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources.NotFoundException;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.auth.module.face.service.TrainingService;
+import at.usmile.panshot.SharedPrefs;
+import at.usmile.panshot.nu.DataUtil;
+import at.usmile.panshot.nu.RecognitionModule;
+import at.usmile.panshot.util.MediaSaveUtil;
 
 /**
  * Entry point if user opens app to train or change settings (= if not called by
@@ -43,6 +56,20 @@ public class MainActivity extends Activity {
 		Log.d(TAG, "onCreate()");
 
 		setContentView(R.layout.layout_activity_face_main);
+
+		if (!OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, this, new LoaderCallbackInterface() {
+
+			@Override
+			public void onPackageInstall(int _operation, InstallCallbackInterface _callback) {
+			}
+
+			@Override
+			public void onManagerConnected(int _status) {
+			}
+		})) {
+			// TODO inform user, abort
+			Log.e(TAG, "onCreate: cannot connect to opencv");
+		}
 
 		Button buttonRecordData = (Button) findViewById(R.id.button_record_data);
 		buttonRecordData.setOnClickListener(new OnClickListener() {
@@ -75,6 +102,24 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonRetrainClassifiersForeground#OnClickListener()");
+				RecognitionModule recognitionModule = new RecognitionModule();
+
+				// train and persist recognitionmodule
+				Toast.makeText(MainActivity.this, "Training started, may take a while...", Toast.LENGTH_LONG).show();
+				recognitionModule.train(MainActivity.this, SharedPrefs.getAngleBetweenClassifiers(MainActivity.this),
+						SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(MainActivity.this));
+				try {
+					File directory = MediaSaveUtil.getMediaStorageDirectory(getResources().getString(
+							R.string.app_classifier_directory_name));
+					DataUtil.serializeRecognitionModule(directory, recognitionModule);
+				} catch (NotFoundException e2) {
+					e2.printStackTrace();
+					Toast.makeText(MainActivity.this, "Storing failed: NotFoundException", Toast.LENGTH_LONG).show();
+				} catch (IOException e2) {
+					e2.printStackTrace();
+					Toast.makeText(MainActivity.this, "Storing failed: IOException", Toast.LENGTH_LONG).show();
+				}
+				Toast.makeText(MainActivity.this, "Training finished.", Toast.LENGTH_LONG).show();
 			}
 		});
 

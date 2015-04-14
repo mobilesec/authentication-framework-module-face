@@ -23,7 +23,6 @@ public class KnnClassifier implements FaceClassifier {
 	private List<PanshotImage> mImages;
 	private Mat mPcaEigenvectors;
 	private Mat mPcaMean;
-	private Mat mPcaProjections;
 
 	// ================================================================================================================
 	// METHODS
@@ -42,7 +41,6 @@ public class KnnClassifier implements FaceClassifier {
 		mImages = _trainingData.images;
 		mPcaEigenvectors = _trainingData.pcaEigenvectors;
 		mPcaMean = _trainingData.pcaMean;
-		mPcaProjections = _trainingData.pcaProjections;
 	}
 
 	/**

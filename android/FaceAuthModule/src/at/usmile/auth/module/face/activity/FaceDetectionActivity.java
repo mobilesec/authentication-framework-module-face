@@ -1,12 +1,9 @@
 package at.usmile.auth.module.face.activity;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,7 +59,6 @@ import at.usmile.panshot.User;
 import at.usmile.panshot.nu.DataUtil;
 import at.usmile.panshot.nu.FaceModuleUtil;
 import at.usmile.panshot.nu.RecognitionModule;
-import at.usmile.panshot.recognition.svm.SvmClassifier;
 import at.usmile.panshot.util.MediaSaveUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
@@ -132,29 +128,10 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	private static final String CSV_FILENAME_EXTENSION = ".csv.jpg";
 
 	/**
-	 * Angle that lies between two neighbouring images of the same panshot and
-	 * angle that lies between two neighbouring classifiers.
-	 */
-	private static final float ANGLE_DIFF_OF_PHOTOS = (float) (22.5f / 2f / 180f * Math.PI);
-	// 22.5 degree = 9 pics / 180 degree
-	/**
-	 * why ODD x ANGLE_DIFF_OF_PHOTOS? Because as classifiers depend on
-	 * ANGLE_DIFF_OF_PHOTOS this prevents classifiers of having to handle
-	 * frontal AND profile images, as the separation is exactly in between.
-	 */
-	private static final float FRONTAL_MAX_ANGLE = 3 * ANGLE_DIFF_OF_PHOTOS;
-
-	/**
 	 * BAD: hard coded index of angle values in angle array (we are only looking
 	 * at one axis here).
 	 */
 	private static final int ANGLE_INDEX = 0;
-
-	/**
-	 * how much images are required per perspective and user in order to allow
-	 * training.
-	 */
-	private static final Integer MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER = 3;
 
 	/**
 	 * if only frontal images are used. if yes: recording stops immediately
@@ -176,7 +153,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	 * checks if it is time to take a new photo in the faceview, based on the
 	 * gyro-sensor.
 	 */
-	private PhotoGyroListener mPhotoGyroListener = new PhotoGyroListener(ANGLE_DIFF_OF_PHOTOS);
+	private PhotoGyroListener mPhotoGyroListener;
 
 	private List<PanshotImage> images = new ArrayList<PanshotImage>();
 
@@ -284,7 +261,11 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		}
 	};
 
-	private double tmp = 0;
+	/**
+	 * recognition component. only used if we are not recording new training
+	 * data.
+	 */
+	private RecognitionModule mRecognitionModule = null;
 
 	// ================================================================================================================
 	// ANDROID METHODS
@@ -323,6 +304,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			Log.e(TAG, "onCreate: cannot connect to opencv");
 		}
 
+		mPhotoGyroListener = new PhotoGyroListener(SharedPrefs.getAngleBetweenClassifiers(this));
+
 		// get info from calling Activity
 		Bundle extras = getIntent().getExtras();
 
@@ -335,11 +318,23 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
 
-				// TODO enable after implementing training service
-				// // create components required for recognition
-				// mRecognitionModule = new RecognitionModule();
-
-				// TODO ensure we have classifiers to load, abort otherwise
+				// create components required for recognition
+				mRecognitionModule = new RecognitionModule();
+				// load pre-trained recognitionmodule
+				try {
+					File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
+							R.string.app_classifier_directory_name));
+					mRecognitionModule = DataUtil.deserializeRecognitiosModule(directory);
+				} catch (NotFoundException e1) {
+					// TODO ensure we have classifiers to load, abort otherwise
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO ensure we have classifiers to load, abort otherwise
+					e1.printStackTrace();
+				} catch (ClassNotFoundException e1) {
+					// TODO ensure we have classifiers to load, abort otherwise
+					e1.printStackTrace();
+				}
 			}
 
 			// AUTHENTICATE
@@ -666,8 +661,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			// select face detection classifier
 			CascadeClassifier cascadeClassifier = mJavaDetector_LBPCascadeFrontalface;
 			DetectionBasedTracker detectionBasedTracker = mNativeDetector_LBPCascadeFrontalface;
-			boolean mirroring = angle < -FRONTAL_MAX_ANGLE;
-			boolean usingProfile = Math.abs(angle) > FRONTAL_MAX_ANGLE;
+			boolean mirroring = angle < -SharedPrefs.getFrontalMaxAngle(this);
+			boolean usingProfile = Math.abs(angle) > SharedPrefs.getFrontalMaxAngle(this);
 			Mat image = panshotImage.grayImage;
 			if (usingProfile) {
 
@@ -766,106 +761,13 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 					case RECORD_DATA:
 						// save images
 						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
-								USE_FRONTAL_ONLY, ANGLE_DIFF_OF_PHOTOS);
+								USE_FRONTAL_ONLY, SharedPrefs.getAngleBetweenClassifiers(this));
 						break;
 
 					case RECOGNITION_TEST:
 					case AUTHENTICATION:
 
-						// TODO move to service
-						RecognitionModule mRecognitionModule = new RecognitionModule();
-
-						// mRecognitionModule.train(this, ANGLE_DIFF_OF_PHOTOS,
-						// MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER);
-						//
-						// // TODO extract to e.g. media util
-						//
-						// // DEBUG serialize
-						// FileOutputStream fileOutputStream = null;
-						// ObjectOutputStream objectOutputStream = null;
-						// try {
-						// File directory =
-						// MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-						// .getString(R.string.app_classifier_directory_name));
-						// if (!directory.exists()) {
-						// directory.mkdir();
-						// }
-						//
-						// // serialize recognition module
-						// fileOutputStream = new FileOutputStream(new
-						// File(directory, "recognition_module.ser"));
-						// objectOutputStream = new
-						// ObjectOutputStream(fileOutputStream);
-						// objectOutputStream.writeObject(mRecognitionModule);
-						// objectOutputStream.close();
-						// fileOutputStream.close();
-						//
-						// // store native data
-						// for (SvmClassifier c :
-						// mRecognitionModule.getSvmClassifiers().values()) {
-						// c.storeNativeData(directory);
-						// }
-						//
-						// } catch (IOException e) {
-						// e.printStackTrace();
-						// } finally {
-						// if (objectOutputStream != null) {
-						// try {
-						// objectOutputStream.close();
-						// } catch (IOException e) {
-						// }
-						// }
-						// if (fileOutputStream != null) {
-						// try {
-						// fileOutputStream.close();
-						// } catch (IOException e) {
-						// }
-						// }
-						// }
-
-						// DEBUG deserialize
-						FileInputStream fileInputStream = null;
-						ObjectInputStream objectInputStream = null;
-						RecognitionModule r = null;
-						try {
-							File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
-									.getString(R.string.app_classifier_directory_name));
-
-							// deserialize
-							fileInputStream = new FileInputStream(new File(directory, "recognition_module.ser"));
-							objectInputStream = new ObjectInputStream(fileInputStream);
-							r = (RecognitionModule) objectInputStream.readObject();
-							objectInputStream.close();
-							fileInputStream.close();
-
-							// load native data
-							for (SvmClassifier c : r.getSvmClassifiers().values()) {
-								c.loadNativeData(directory);
-							}
-						} catch (StreamCorruptedException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						} catch (ClassNotFoundException e) {
-							e.printStackTrace();
-						} finally {
-							if (objectInputStream != null) {
-								try {
-									objectInputStream.close();
-								} catch (IOException e) {
-								}
-							}
-							if (fileInputStream != null) {
-								try {
-									fileInputStream.close();
-								} catch (IOException e) {
-								}
-							}
-						}
-
-						Log.d(TAG, "Before serialization: " + mRecognitionModule);
-						Log.d(TAG, "Deserialized:         " + r);
-						mRecognitionModule = r;
+						Log.d(TAG, "Deserialized: " + mRecognitionModule);
 
 						// only use images in which faces where
 						// detected
@@ -930,7 +832,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 									GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
 											.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
 													SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
-													ANGLE_DIFF_OF_PHOTOS);
+													SharedPrefs.getAngleBetweenClassifiers(this));
 									Toast.makeText(
 											this,
 											getResources().getString(R.string.most_likely_user_knn,
@@ -942,7 +844,9 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 								case SVM: {
 									GenericTuple3<User, Double, Map<User, Double>> classificationResult = mRecognitionModule
 											.classifySvm(imagesWithFaces, SharedPrefs.usePca(this),
-													SharedPrefs.getAmountOfPcaFeatures(this), ANGLE_DIFF_OF_PHOTOS);
+													SharedPrefs.getAmountOfPcaFeatures(this),
+													SharedPrefs.getAngleBetweenClassifiers(this));
+
 									Toast.makeText(
 											this,
 											getResources().getString(R.string.most_likely_user_svm,
@@ -962,4 +866,5 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			}
 		}
 	}
+
 }

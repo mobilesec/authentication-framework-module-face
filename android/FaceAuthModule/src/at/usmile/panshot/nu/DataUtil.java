@@ -3,10 +3,13 @@ package at.usmile.panshot.nu;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,6 +35,7 @@ import at.usmile.panshot.SensorComponent;
 import at.usmile.panshot.SensorValues;
 import at.usmile.panshot.SensorValues.Observation;
 import at.usmile.panshot.User;
+import at.usmile.panshot.recognition.svm.SvmClassifier;
 import at.usmile.panshot.util.MediaSaveUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
@@ -359,4 +363,69 @@ public class DataUtil {
 		return panshotImages;
 	}
 
+	public static void serializeRecognitionModule(File directory, RecognitionModule mRecognitionModule) throws IOException {
+		FileOutputStream fileOutputStream = null;
+		ObjectOutputStream objectOutputStream = null;
+		if (!directory.exists()) {
+			directory.mkdir();
+		}
+		try {
+			// serialize recognition module
+			fileOutputStream = new FileOutputStream(new File(directory, "recognition_module.ser"));
+			objectOutputStream = new ObjectOutputStream(fileOutputStream);
+			objectOutputStream.writeObject(mRecognitionModule);
+
+			// store native data
+			for (SvmClassifier c : mRecognitionModule.getSvmClassifiers().values()) {
+				c.storeNativeData(directory);
+			}
+
+		} finally {
+			if (objectOutputStream != null) {
+				try {
+					objectOutputStream.close();
+				} catch (IOException e) {
+				}
+			}
+			if (fileOutputStream != null) {
+				try {
+					fileOutputStream.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+	}
+
+	public static RecognitionModule deserializeRecognitiosModule(File _directory) throws NotFoundException, IOException,
+			ClassNotFoundException {
+		FileInputStream fileInputStream = null;
+		ObjectInputStream objectInputStream = null;
+		RecognitionModule r = null;
+		try {
+			// deserialize
+			fileInputStream = new FileInputStream(new File(_directory, "recognition_module.ser"));
+			objectInputStream = new ObjectInputStream(fileInputStream);
+			r = (RecognitionModule) objectInputStream.readObject();
+
+			// load native data
+			for (SvmClassifier c : r.getSvmClassifiers().values()) {
+				c.loadNativeData(_directory);
+			}
+
+		} finally {
+			if (objectInputStream != null) {
+				try {
+					objectInputStream.close();
+				} catch (IOException e) {
+				}
+			}
+			if (fileInputStream != null) {
+				try {
+					fileInputStream.close();
+				} catch (IOException e) {
+				}
+			}
+		}
+		return r;
+	}
 }

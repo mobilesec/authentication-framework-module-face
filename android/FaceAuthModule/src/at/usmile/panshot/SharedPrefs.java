@@ -55,6 +55,27 @@ public abstract class SharedPrefs {
 	 */
 	public static final String PCA_AMOUNT_OF_FEATURES = SHARED_PREFENCES_ID + ".pca_amount_of_features";
 
+	/**
+	 * how much images are required per perspective and user in order to allow
+	 * training.
+	 */
+	public static final String MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER = SHARED_PREFENCES_ID
+			+ ".min_amount_of_training_images_per_subject_and_perspective";
+
+	/**
+	 * Angle that lies between two neighbouring images of the same panshot and
+	 * angle that lies between two neighbouring classifiers.
+	 */
+	// 22.5 degree = 9 pics / 180 degree
+	public static final String ANGLE_DIFF_OF_PHOTOS = SHARED_PREFENCES_ID + ".angle_difference_between_classifier";
+
+	/**
+	 * why ODD x ANGLE_DIFF_OF_PHOTOS? Because as classifiers depend on
+	 * ANGLE_DIFF_OF_PHOTOS this prevents classifiers of having to handle
+	 * frontal AND profile images, as the separation is exactly in between.
+	 */
+	public static final String FRONTAL_MAX_ANGLE = SHARED_PREFENCES_ID + ".front_max_angle";
+
 	// ==============================================================================================================
 	// READ ACCESS
 
@@ -105,4 +126,21 @@ public abstract class SharedPrefs {
 	public static int getKnnK(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getInt(SharedPrefs.KNN_K, 3);
 	}
+
+	public static int getMinAmountOfTrainingImagesPerSubjectAntClassifier(Context _context) {
+		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getInt(
+				SharedPrefs.MIN_AMOUNT_IMAGES_PER_SUBJECT_AND_CLASSIFIER, 3);
+	}
+
+	public static float getAngleBetweenClassifiers(Context _context) {
+		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getFloat(
+				SharedPrefs.ANGLE_DIFF_OF_PHOTOS, (float) (22.5f / 2f / 180f * Math.PI));
+	}
+
+	// float
+	public static float getFrontalMaxAngle(Context _context) {
+		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getFloat(
+				SharedPrefs.FRONTAL_MAX_ANGLE, 3 * getAngleBetweenClassifiers(_context));
+	}
+
 }
