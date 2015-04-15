@@ -75,7 +75,7 @@ import at.usmile.tuple.GenericTuple3;
  */
 public class FaceDetectionActivity extends Activity implements CvCameraViewListener2 {
 
-	// TODO replace all by LOGGER
+	// TODO replace all by LOGGER or kick logger
 
 	// ================================================================================================================
 	// MEMBERS
@@ -123,6 +123,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	/** SW version */
 	public static final String SESSION_ID = "01";
 
+	// TODO extract these to sharedprefs
+
 	private static final float PANSHOT_TARGET_MIN_ANGLE = (float) (Math.PI * 170.0f / 180.0f);
 
 	private static final String CSV_FILENAME_EXTENSION = ".csv.jpg";
@@ -132,14 +134,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	 * at one axis here).
 	 */
 	private static final int ANGLE_INDEX = 0;
-
-	/**
-	 * if only frontal images are used. if yes: recording stops immediately
-	 * after taking the first pic, so user does not have to press twice.
-	 */
-	private static final boolean USE_FRONTAL_ONLY = true;
-	// TODO extract to settings (use different FS locations for panshot and
-	// frontal only data)
 
 	// ================================================================================================================
 	// CAMVIEW MEMBERS
@@ -288,7 +282,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 		// fit recording hint to our approach
 		TextView textviewRecordingHint = (TextView) findViewById(R.id.textview_recording_hint);
-		if (USE_FRONTAL_ONLY) {
+		if (SharedPrefs.isFrontalOnly(this)) {
 			textviewRecordingHint.setText(R.string.how_to_record_hint_frontal);
 		}
 
@@ -318,22 +312,46 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
 
-				// create components required for recognition
-				mRecognitionModule = new RecognitionModule();
 				// load pre-trained recognitionmodule
+				final EditText edittext = new EditText(FaceDetectionActivity.this);
+				DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						Log.d(TAG, "DialogInterface.OnClickListener#onClick()");
+						FaceDetectionActivity.this.finish();
+					}
+				};
+				Builder builder = new AlertDialog.Builder(FaceDetectionActivity.this)
+						.setTitle(FaceDetectionActivity.this.getResources().getString(R.string.error))
+						.setPositiveButton(FaceDetectionActivity.this.getResources().getString(R.string.ok), listener)
+						.setOnKeyListener(new OnKeyListener() {
+							@Override
+							public boolean onKey(DialogInterface _dialog, int _keyCode, KeyEvent _event) {
+								Log.d(TAG, "DialogInterface.OnClickListener#onKey()");
+								if (_keyCode == KeyEvent.KEYCODE_BACK) {
+									FaceDetectionActivity.this.finish();
+								}
+								return false;
+							}
+						});
 				try {
 					File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
 							R.string.app_classifier_directory_name));
 					mRecognitionModule = DataUtil.deserializeRecognitiosModule(directory);
 				} catch (NotFoundException e1) {
-					// TODO ensure we have classifiers to load, abort otherwise
 					e1.printStackTrace();
+					builder.setMessage(
+							FaceDetectionActivity.this.getResources().getString(R.string.error_classifier_could_not_be_loaded,
+									e1.toString())).show();
 				} catch (IOException e1) {
-					// TODO ensure we have classifiers to load, abort otherwise
 					e1.printStackTrace();
+					builder.setMessage(
+							FaceDetectionActivity.this.getResources().getString(R.string.error_classifier_could_not_be_loaded,
+									e1.toString())).show();
 				} catch (ClassNotFoundException e1) {
-					// TODO ensure we have classifiers to load, abort otherwise
 					e1.printStackTrace();
+					builder.setMessage(
+							FaceDetectionActivity.this.getResources().getString(R.string.error_classifier_could_not_be_loaded,
+									e1.toString())).show();
 				}
 			}
 
@@ -546,7 +564,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		images.clear();
 		SensorComponent.instance().start();
 		PanshotUtil.playSoundfile(this, R.raw.beep);
-		if (!USE_FRONTAL_ONLY) {
+		if (!SharedPrefs.isFrontalOnly(this)) {
 			ImageView imageViewRedDot = (ImageView) findViewById(R.id.imageView_redDot);
 			imageViewRedDot.setVisibility(ImageView.VISIBLE);
 		}
@@ -556,7 +574,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		Log.d(OldMainActivity.class.getSimpleName(), "stopping image taking. we recorded " + images.size() + " images.");
 		mIsTakingPictures = false;
 		SensorComponent.instance().stop();
-		if (!USE_FRONTAL_ONLY) {
+		if (!SharedPrefs.isFrontalOnly(this)) {
 			ImageView imageViewRedDot = (ImageView) findViewById(R.id.imageView_redDot);
 			imageViewRedDot.setVisibility(ImageView.INVISIBLE);
 		}
@@ -634,7 +652,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			PanshotImage panshotImage = new PanshotImage(graycopy, grayface, sensorValues.getRotationValues().value,
 					(acc == null ? null : acc.value), (light == null ? null : light.value), timestamp);
 			images.add(panshotImage);
-			if (USE_FRONTAL_ONLY) {
+			if (SharedPrefs.isFrontalOnly(this)) {
 				// we've taken 1 image, stop recording automatically right now
 				runOnUiThread(new Runnable() {
 					@Override
@@ -761,13 +779,19 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 					case RECORD_DATA:
 						// save images
 						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
-								USE_FRONTAL_ONLY, SharedPrefs.getAngleBetweenClassifiers(this));
+								SharedPrefs.isFrontalOnly(this), SharedPrefs.getAngleBetweenClassifiers(this));
 						break;
 
 					case RECOGNITION_TEST:
 					case AUTHENTICATION:
 
 						Log.d(TAG, "Deserialized: " + mRecognitionModule);
+						if (mRecognitionModule == null) {
+							Toast.makeText(this,
+									getResources().getText(R.string.error_classifier_could_not_be_loaded, "aborting"),
+									Toast.LENGTH_SHORT).show();
+							return;
+						}
 
 						// only use images in which faces where
 						// detected

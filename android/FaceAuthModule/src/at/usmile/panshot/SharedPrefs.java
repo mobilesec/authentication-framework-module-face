@@ -76,6 +76,13 @@ public abstract class SharedPrefs {
 	 */
 	public static final String FRONTAL_MAX_ANGLE = SHARED_PREFENCES_ID + ".front_max_angle";
 
+	/**
+	 * if only frontal images are used. if yes: recording stops immediately
+	 * after taking the first pic, so user does not have to press twice.
+	 */
+	private static final String USE_FRONTAL_ONLY = SHARED_PREFENCES_ID + ".use_frontal_only"; // boolean
+																								// true
+
 	// ==============================================================================================================
 	// READ ACCESS
 
@@ -86,7 +93,7 @@ public abstract class SharedPrefs {
 
 	public static boolean useImageEnergyNormlization(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getBoolean(
-				SharedPrefs.USE_ENERGY_NORMALIZATION, false);
+				SharedPrefs.USE_ENERGY_NORMALIZATION, true);
 	}
 
 	public static int getFaceWidth(Context _context) {
@@ -108,7 +115,7 @@ public abstract class SharedPrefs {
 
 	public static int getAmountOfPcaFeatures(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getInt(
-				SharedPrefs.PCA_AMOUNT_OF_FEATURES, 20);
+				SharedPrefs.PCA_AMOUNT_OF_FEATURES, 50);
 	}
 
 	public static RecognitionType getRecognitionType(Context _context) {
@@ -137,10 +144,13 @@ public abstract class SharedPrefs {
 				SharedPrefs.ANGLE_DIFF_OF_PHOTOS, (float) (22.5f / 2f / 180f * Math.PI));
 	}
 
-	// float
 	public static float getFrontalMaxAngle(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getFloat(
 				SharedPrefs.FRONTAL_MAX_ANGLE, 3 * getAngleBetweenClassifiers(_context));
 	}
 
+	public static boolean isFrontalOnly(Context _context) {
+		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getBoolean(
+				SharedPrefs.USE_FRONTAL_ONLY, true);
+	}
 }
