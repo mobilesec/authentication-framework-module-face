@@ -98,10 +98,32 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "mButtonRetrainClassifiersBackground#OnClickListener()");
-				// trigger training service
-				Intent i = new Intent(MainActivity.this, TrainingService.class);
-				startService(i);
-				setTrainingOngoingUIEnabled(false);
+
+				// "are you sure" dialogue box
+				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+
+							case DialogInterface.BUTTON_POSITIVE:
+								Log.d(ManageDataActivity.class.getSimpleName(), "dialogClickListener.YES");
+								setTrainingOngoingUIEnabled(false);
+								// trigger training service
+								Intent i = new Intent(MainActivity.this, TrainingService.class);
+								startService(i);
+								break;
+
+							case DialogInterface.BUTTON_NEGATIVE:
+								Log.d(ManageDataActivity.class.getSimpleName(), "dialogClickListener.NO");
+								break;
+						}
+					}
+				};
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+				builder.setMessage(MainActivity.this.getResources().getString(R.string.ask_train_background))
+						.setPositiveButton(MainActivity.this.getResources().getString(R.string.yes), dialogClickListener)
+						.setNegativeButton(MainActivity.this.getResources().getString(R.string.no), dialogClickListener).show();
+
 			}
 		});
 
