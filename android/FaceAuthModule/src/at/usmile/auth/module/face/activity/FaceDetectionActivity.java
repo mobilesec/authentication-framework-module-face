@@ -35,8 +35,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.DialogInterface.OnKeyListener;
+import android.content.Intent;
 import android.content.res.Resources.NotFoundException;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -45,6 +47,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import at.usmile.auth.module.face.FaceAuthenticationModule;
 import at.usmile.auth.module.face.R;
 import at.usmile.functional.FunApply;
 import at.usmile.functional.FunFilter;
@@ -361,7 +364,24 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				// make user text invisible
 				textviewIdentity.setVisibility(View.INVISIBLE);
 
-				// see test face rec for details
+				try {
+					File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
+							R.string.app_classifier_directory_name));
+					mRecognitionModule = DataUtil.deserializeRecognitiosModule(directory);
+				} catch (NotFoundException e1) {
+					e1.printStackTrace();
+					sendConfidenceToAuthFramework(0f);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+					sendConfidenceToAuthFramework(0f);
+				} catch (ClassNotFoundException e1) {
+					e1.printStackTrace();
+					sendConfidenceToAuthFramework(0f);
+				}
+
+				// inform user that it's the authentication framework calling
+				// for face auth.
+				Toast.makeText(this, getResources().getText(R.string.info_called_from_framework), Toast.LENGTH_SHORT);
 			}
 
 			// RECORD NEW DATA
@@ -475,7 +495,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.d(OldMainActivity.class.getSimpleName(), "CameraFragment.onResume()");
+		Log.d(OldMainActivity.class.getSimpleName(), "onResume()");
 
 		// create sensor stuff
 		SensorComponent.init(this);
@@ -531,6 +551,25 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 	// ================================================================================================================
 	// METHODS
+
+	/**
+	 * This is how your explicit authentication Activity can stop its task and
+	 * send back acquired confidence to your module of the authentication
+	 * framework.
+	 */
+	private void sendConfidenceToAuthFramework(Float _confidence) {
+		Log.d(TAG, "sendConfidenceToAuthFramework");
+
+		// create intent and add confidence from authentication process
+		Intent resultIntent = new Intent(FaceAuthenticationModule.ON_AUTHENTICATION);
+		resultIntent.putExtra(FaceAuthenticationModule.CONFIDENCE, _confidence);
+
+		// sent info back to auth module
+		LocalBroadcastManager.getInstance(this).sendBroadcast(resultIntent);
+
+		// we're done with authenticating and can terminate
+		finish();
+	}
 
 	private void updateUiFromCurrentUser() {
 		if (mFaceDetectionPurpose == FaceDetectionPurpose.RECORD_DATA) {
@@ -848,43 +887,80 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							}
 						});
 
-						// TODO test VS auth: split here
-						if (imagesWithFaces.size() > 0) {
-							// decide which recognition to use
-							switch (SharedPrefs.getRecognitionType(FaceDetectionActivity.this)) {
-								case KNN: {
-									GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
-											.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
-													SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
-													SharedPrefs.getAngleBetweenClassifiers(this));
-									Toast.makeText(
-											this,
-											getResources().getString(R.string.most_likely_user_knn,
-													classificationResult.value1.getName(), classificationResult.value2),
-											Toast.LENGTH_LONG).show();
+						switch (mFaceDetectionPurpose) {
+							case AUTHENTICATION: {
+								if (imagesWithFaces.size() == 0) {
+									sendConfidenceToAuthFramework(0f);
 									break;
 								}
 
-								case SVM: {
-									GenericTuple3<User, Double, Map<User, Double>> classificationResult = mRecognitionModule
-											.classifySvm(imagesWithFaces, SharedPrefs.usePca(this),
-													SharedPrefs.getAmountOfPcaFeatures(this),
-													SharedPrefs.getAngleBetweenClassifiers(this));
+								// decide which recognition to use
+								switch (SharedPrefs.getRecognitionType(FaceDetectionActivity.this)) {
+									case KNN: {
+										GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
+												.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
+														SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
+														SharedPrefs.getAngleBetweenClassifiers(this));
+										sendConfidenceToAuthFramework(classificationResult.value2.floatValue());
+										break;
+									}
 
-									Toast.makeText(
-											this,
-											getResources().getString(R.string.most_likely_user_svm,
-													classificationResult.value1.getName(), classificationResult.value2),
-											Toast.LENGTH_LONG).show();
-									break;
+									case SVM: {
+										GenericTuple3<User, Double, Map<User, Double>> classificationResult = mRecognitionModule
+												.classifySvm(imagesWithFaces, SharedPrefs.usePca(this),
+														SharedPrefs.getAmountOfPcaFeatures(this),
+														SharedPrefs.getAngleBetweenClassifiers(this));
+										sendConfidenceToAuthFramework(classificationResult.value2.floatValue());
+										break;
+									}
 								}
-
+								break;
 							}
-						} else {
-							Toast.makeText(FaceDetectionActivity.this,
-									FaceDetectionActivity.this.getResources().getString(R.string.no_faces_detected),
-									Toast.LENGTH_LONG).show();
+
+							case RECOGNITION_TEST: {
+								if (imagesWithFaces.size() > 0) {
+									// decide which recognition to use
+									switch (SharedPrefs.getRecognitionType(FaceDetectionActivity.this)) {
+										case KNN: {
+											GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
+													.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
+															SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
+															SharedPrefs.getAngleBetweenClassifiers(this));
+											Toast.makeText(
+													this,
+													getResources().getString(R.string.most_likely_user_knn,
+															classificationResult.value1.getName(), classificationResult.value2),
+													Toast.LENGTH_LONG).show();
+											break;
+										}
+
+										case SVM: {
+											GenericTuple3<User, Double, Map<User, Double>> classificationResult = mRecognitionModule
+													.classifySvm(imagesWithFaces, SharedPrefs.usePca(this),
+															SharedPrefs.getAmountOfPcaFeatures(this),
+															SharedPrefs.getAngleBetweenClassifiers(this));
+
+											Toast.makeText(
+													this,
+													getResources().getString(R.string.most_likely_user_svm,
+															classificationResult.value1.getName(), classificationResult.value2),
+													Toast.LENGTH_LONG).show();
+											break;
+										}
+
+									}
+								} else {
+									Toast.makeText(FaceDetectionActivity.this,
+											FaceDetectionActivity.this.getResources().getString(R.string.no_faces_detected),
+											Toast.LENGTH_LONG).show();
+								}
+								break;
+							}
+
+							default:
+								throw new RuntimeException("not implemented?");
 						}
+
 				}
 				images.clear();
 			}

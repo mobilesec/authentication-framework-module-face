@@ -1,10 +1,13 @@
 package at.usmile.auth.module.face.activity;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.res.Resources.NotFoundException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,9 +17,11 @@ import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.User;
 import at.usmile.panshot.nu.FaceModuleUtil;
+import at.usmile.panshot.util.MediaSaveUtil;
 
 /**
  * Allows user to manipulate (e.g. delete) recorded auth data.
@@ -37,6 +42,35 @@ public class ManageDataActivity extends Activity {
 		Log.d(TAG, "onCreate()");
 
 		setContentView(R.layout.layout_activity_face_manage_data);
+
+		final Button buttonManageDataWithFSM = (Button) findViewById(R.id.button_manage_date_with_fsm);
+		buttonManageDataWithFSM.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View _v) {
+				Log.d(TAG, "buttonManageDataWithFSM.setOnClickListener()");
+				// open FM on correct location
+				try {
+					File mediaDir = MediaSaveUtil.getMediaStorageDirectory(getResources().getString(
+							R.string.app_media_directory_name));
+
+					// Intent intent = new Intent();
+					// intent.setAction(Intent.ACTION_GET_CONTENT);
+					// intent.setType("file/*");
+					// startActivity(intent);
+
+					Toast.makeText(ManageDataActivity.this, "not implemented yet.", Toast.LENGTH_LONG).show();
+
+				} catch (NotFoundException e) {
+					Toast.makeText(ManageDataActivity.this, getResources().getText(R.string.error) + ": " + e.toString(),
+							Toast.LENGTH_LONG).show();
+					e.printStackTrace();
+				} catch (IOException e) {
+					Toast.makeText(ManageDataActivity.this, getResources().getText(R.string.error) + ": " + e.toString(),
+							Toast.LENGTH_LONG).show();
+					e.printStackTrace();
+				}
+			}
+		});
 
 		// load users
 		final List<User> users = FaceModuleUtil.loadExistingUsers(this, null, null);
@@ -96,7 +130,8 @@ public class ManageDataActivity extends Activity {
 			buttonDeleteIdentity.setEnabled(false);
 			spinnerIdentity.setEnabled(false);
 		} else {
-			buttonDeleteIdentity.setEnabled(true);
+			// buttonDeleteIdentity.setEnabled(true);
+			buttonDeleteIdentity.setEnabled(false);
 			spinnerIdentity.setEnabled(true);
 
 			spinnerAdapterUsers.clear();
