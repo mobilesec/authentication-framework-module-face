@@ -69,6 +69,8 @@
     <string name="error_opencv_not_loaded">OpenCV could not be loaded, certain functionality will be unavailable.</string>
     <string name="ask_train_foreground">Really train in foreground? This may take a while (do not exit or kill the App in the meantime).</string>
     <string name="error_classifier_could_not_be_loaded">Classifier could not be loaded: %1$s</string>
+    <string name="error_service_training">Training encounterd an error: %1$s</string>
+    <string name="textview_training_ongoing">Training ongoing</string>
     
     
 </resources>

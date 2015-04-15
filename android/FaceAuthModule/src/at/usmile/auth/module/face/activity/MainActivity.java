@@ -21,6 +21,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.auth.module.face.service.TrainingService;
@@ -58,6 +60,18 @@ public class MainActivity extends Activity {
 	 */
 	private Button mButtonRetrainClassifiersForeground;
 
+	private Button mButtonRecordData;
+
+	private Button mButtonTestFaceAuth;
+
+	private Button mButtonSettings;
+
+	private Button mButtonManageData;
+
+	private ProgressBar mProgressbarTrainingOngoing;
+
+	private TextView mTextviewTrainingOngoing;
+
 	@Override
 	protected void onCreate(Bundle _savedInstanceState) {
 		super.onCreate(_savedInstanceState);
@@ -65,8 +79,8 @@ public class MainActivity extends Activity {
 
 		setContentView(R.layout.layout_activity_face_main);
 
-		Button buttonRecordData = (Button) findViewById(R.id.button_record_data);
-		buttonRecordData.setOnClickListener(new OnClickListener() {
+		mButtonRecordData = (Button) findViewById(R.id.button_record_data);
+		mButtonRecordData.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTrain#OnClickListener()");
@@ -87,8 +101,7 @@ public class MainActivity extends Activity {
 				// trigger training service
 				Intent i = new Intent(MainActivity.this, TrainingService.class);
 				startService(i);
-				mButtonRetrainClassifiersBackground.setEnabled(false);
-				mButtonRetrainClassifiersForeground.setEnabled(false);
+				setTrainingOngoingUIEnabled(false);
 			}
 		});
 
@@ -107,12 +120,10 @@ public class MainActivity extends Activity {
 							case DialogInterface.BUTTON_POSITIVE:
 								Log.d(ManageDataActivity.class.getSimpleName(), "dialogClickListener.YES");
 
-								mButtonRetrainClassifiersBackground.setEnabled(false);
-								mButtonRetrainClassifiersForeground.setEnabled(false);
-
-								RecognitionModule recognitionModule = new RecognitionModule();
+								setTrainingOngoingUIEnabled(false);
 
 								// train and persist recognitionmodule
+								RecognitionModule recognitionModule = new RecognitionModule();
 								Toast.makeText(MainActivity.this, "Training started, may take a while...", Toast.LENGTH_LONG)
 										.show();
 								recognitionModule.train(MainActivity.this,
@@ -132,8 +143,7 @@ public class MainActivity extends Activity {
 								}
 								Toast.makeText(MainActivity.this, "Training finished.", Toast.LENGTH_LONG).show();
 
-								mButtonRetrainClassifiersBackground.setEnabled(true);
-								mButtonRetrainClassifiersForeground.setEnabled(true);
+								setTrainingOngoingUIEnabled(true);
 
 								break;
 
@@ -151,8 +161,8 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		Button buttonTestFaceAuth = (Button) findViewById(R.id.button_test_authentication);
-		buttonTestFaceAuth.setOnClickListener(new OnClickListener() {
+		mButtonTestFaceAuth = (Button) findViewById(R.id.button_test_authentication);
+		mButtonTestFaceAuth.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonTestFaceAuth#OnClickListener()");
@@ -164,8 +174,8 @@ public class MainActivity extends Activity {
 			}
 		});
 
-		Button buttonManageData = (Button) findViewById(R.id.button_manage_data);
-		buttonManageData.setOnClickListener(new OnClickListener() {
+		mButtonManageData = (Button) findViewById(R.id.button_manage_data);
+		mButtonManageData.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonManageData#OnClickListener()");
@@ -173,8 +183,8 @@ public class MainActivity extends Activity {
 				startActivityForResult(i, REQUEST_CODE_MANAGE_DATA);
 			}
 		});
-		Button buttonSettings = (Button) findViewById(R.id.button_settings);
-		buttonSettings.setOnClickListener(new OnClickListener() {
+		mButtonSettings = (Button) findViewById(R.id.button_settings);
+		mButtonSettings.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
 				Log.d(TAG, "buttonSettings#OnClickListener()");
@@ -197,10 +207,10 @@ public class MainActivity extends Activity {
 			Toast.makeText(MainActivity.this, MainActivity.this.getResources().getText(R.string.error_opencv_not_loaded),
 					Toast.LENGTH_LONG).show();
 			// modify UI
-			buttonRecordData.setEnabled(false);
 			mButtonRetrainClassifiersBackground.setEnabled(false);
 			mButtonRetrainClassifiersForeground.setEnabled(false);
-			buttonTestFaceAuth.setEnabled(false);
+			mButtonRecordData.setEnabled(false);
+			mButtonTestFaceAuth.setEnabled(false);
 		}
 
 		// broadcast receiver
@@ -208,16 +218,57 @@ public class MainActivity extends Activity {
 			// Called when the BroadcastReceiver gets an Intent it's registered
 			// to receive
 			@Override
-			public void onReceive(Context context, Intent intent) {
+			public void onReceive(Context context, Intent _intent) {
 				Log.d(TAG, "broadcastReceiver#onReceive()");
-				mButtonRetrainClassifiersBackground.setEnabled(true);
-				mButtonRetrainClassifiersForeground.setEnabled(true);
+				setTrainingOngoingUIEnabled(true);
+
+				// get info from calling Activity
+				Bundle extras = _intent.getExtras();
+				if (extras != null) {
+					String status = extras.getString(Statics.TRAINING_SERVICE_STATUS);
+
+					if (status.equals(Statics.TRAINING_SERVICE_STATUS_FAILED)) {
+						String errorString = extras.getString(Statics.TRAINING_SERVICE_STATUS_ERROR_STRING);
+						AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+						builder.setTitle(MainActivity.this.getResources().getString(R.string.error))
+								.setMessage(
+										MainActivity.this.getResources().getString(R.string.error_service_training, errorString))
+								.setPositiveButton(MainActivity.this.getResources().getString(R.string.ok),
+										new DialogInterface.OnClickListener() {
+											@Override
+											public void onClick(DialogInterface _dialog, int _which) {
+											}
+										}).show();
+					}
+				}
 			}
 		};
+
+		mTextviewTrainingOngoing = (TextView) findViewById(R.id.textview_training_ongoing);
+		mProgressbarTrainingOngoing = (ProgressBar) findViewById(R.id.progressbar_training_ongoing);
+
 		// The filter's action is BROADCAST_ACTION
 		IntentFilter intentFilter = new IntentFilter(Statics.TRAINING_SERVICE_BROADCAST_ACTION);
 		// Registers the DownloadStateReceiver and its intent filters
 		LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
+	}
+
+	/**
+	 * control how UI looks if training is/is not ongoing.
+	 * 
+	 * @param _uiEnabled
+	 */
+	public void setTrainingOngoingUIEnabled(boolean _uiEnabled) {
+		mButtonManageData.setEnabled(_uiEnabled);
+		mButtonRecordData.setEnabled(_uiEnabled);
+		mButtonRetrainClassifiersBackground.setEnabled(_uiEnabled);
+		mButtonRetrainClassifiersForeground.setEnabled(_uiEnabled);
+		mButtonSettings.setEnabled(_uiEnabled);
+		mButtonTestFaceAuth.setEnabled(_uiEnabled);
+
+		int visibility = _uiEnabled ? View.INVISIBLE : View.VISIBLE;
+		mTextviewTrainingOngoing.setVisibility(visibility);
+		mProgressbarTrainingOngoing.setVisibility(visibility);
 	}
 
 	@Override
