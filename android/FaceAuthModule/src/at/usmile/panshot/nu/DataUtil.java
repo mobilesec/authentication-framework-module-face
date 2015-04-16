@@ -1,5 +1,7 @@
 package at.usmile.panshot.nu;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
@@ -364,15 +366,14 @@ public class DataUtil {
 	}
 
 	public static void serializeRecognitionModule(File directory, RecognitionModule mRecognitionModule) throws IOException {
-		FileOutputStream fileOutputStream = null;
 		ObjectOutputStream objectOutputStream = null;
 		if (!directory.exists()) {
 			directory.mkdir();
 		}
 		try {
 			// serialize recognition module
-			fileOutputStream = new FileOutputStream(new File(directory, "recognition_module.ser"));
-			objectOutputStream = new ObjectOutputStream(fileOutputStream);
+			objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File(directory,
+					"recognition_module.ser"))));
 			objectOutputStream.writeObject(mRecognitionModule);
 
 			// store native data
@@ -387,24 +388,17 @@ public class DataUtil {
 				} catch (IOException e) {
 				}
 			}
-			if (fileOutputStream != null) {
-				try {
-					fileOutputStream.close();
-				} catch (IOException e) {
-				}
-			}
 		}
 	}
 
 	public static RecognitionModule deserializeRecognitiosModule(File _directory) throws NotFoundException, IOException,
 			ClassNotFoundException {
-		FileInputStream fileInputStream = null;
 		ObjectInputStream objectInputStream = null;
 		RecognitionModule r = null;
 		try {
 			// deserialize
-			fileInputStream = new FileInputStream(new File(_directory, "recognition_module.ser"));
-			objectInputStream = new ObjectInputStream(fileInputStream);
+			objectInputStream = new ObjectInputStream(new BufferedInputStream(new FileInputStream(new File(_directory,
+					"recognition_module.ser"))));
 			r = (RecognitionModule) objectInputStream.readObject();
 
 			// load native data
@@ -416,12 +410,6 @@ public class DataUtil {
 			if (objectInputStream != null) {
 				try {
 					objectInputStream.close();
-				} catch (IOException e) {
-				}
-			}
-			if (fileInputStream != null) {
-				try {
-					fileInputStream.close();
 				} catch (IOException e) {
 				}
 			}

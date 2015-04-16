@@ -834,7 +834,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-			View view = inflater.inflate(R.layout.layout_fragment_main_recording, container, false);
+			View view = inflater.inflate(R.layout.layout_activity_face_detection, container, false);
 			((OldMainActivity) getActivity()).mOpenCvCameraView = (CameraBridgeViewBase) view
 					.findViewById(R.id.fd_activity_surface_view);
 			((OldMainActivity) getActivity()).mOpenCvCameraView.setCameraIndex(1);

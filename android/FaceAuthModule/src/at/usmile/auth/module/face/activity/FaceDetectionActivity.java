@@ -47,6 +47,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import at.usmile.auth.framework.api.AuthenticationStatusData;
 import at.usmile.auth.module.face.FaceAuthenticationModule;
 import at.usmile.auth.module.face.R;
 import at.usmile.functional.FunApply;
@@ -152,7 +153,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	 */
 	private PhotoGyroListener mPhotoGyroListener;
 
-	private List<PanshotImage> images = new ArrayList<PanshotImage>();
+	private List<PanshotImage> mImages = new ArrayList<PanshotImage>();
 
 	private TextView textviewIdentity;
 
@@ -277,7 +278,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.layout_fragment_main_recording);
+		setContentView(R.layout.layout_activity_face_detection);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 		// for updating user in UI
@@ -370,13 +371,13 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 					mRecognitionModule = DataUtil.deserializeRecognitiosModule(directory);
 				} catch (NotFoundException e1) {
 					e1.printStackTrace();
-					sendConfidenceToAuthFramework(0f);
+					sendConfidenceToAuthFrameworkInvalid();
 				} catch (IOException e1) {
 					e1.printStackTrace();
-					sendConfidenceToAuthFramework(0f);
+					sendConfidenceToAuthFrameworkInvalid();
 				} catch (ClassNotFoundException e1) {
 					e1.printStackTrace();
-					sendConfidenceToAuthFramework(0f);
+					sendConfidenceToAuthFrameworkInvalid();
 				}
 
 				// inform user that it's the authentication framework calling
@@ -512,7 +513,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		}
 		// stop taking pictures if we're still taking some by now
 		stopTakingPictures();
-		images.clear();
+		mImages.clear();
 		Log.d(MainActivity.class.getSimpleName(), "CameraFragment.onPause()");
 	}
 
@@ -557,11 +558,12 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	 * send back acquired confidence to your module of the authentication
 	 * framework.
 	 */
-	private void sendConfidenceToAuthFramework(Float _confidence) {
+	private void sendConfidenceToAuthFramework(String _authenticationStatus, float _confidence) {
 		Log.d(TAG, "sendConfidenceToAuthFramework");
 
 		// create intent and add confidence from authentication process
 		Intent resultIntent = new Intent(FaceAuthenticationModule.ON_AUTHENTICATION);
+		resultIntent.putExtra(FaceAuthenticationModule.AUTHENTICATION_STATUS, _authenticationStatus);
 		resultIntent.putExtra(FaceAuthenticationModule.CONFIDENCE, _confidence);
 
 		// sent info back to auth module
@@ -569,6 +571,28 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 		// we're done with authenticating and can terminate
 		finish();
+	}
+
+	/**
+	 * See
+	 * {@link FaceDetectionActivity#sendConfidenceToAuthFramework(AuthenticationStatusData, float)}
+	 * .
+	 * 
+	 * @param _confidence
+	 */
+	private void sendConfidenceToAuthFrameworkOk(float _confidence) {
+		sendConfidenceToAuthFramework(FaceAuthenticationModule.AUTHENTICATION_STATUS_OK, _confidence);
+	}
+
+	/**
+	 * See
+	 * {@link FaceDetectionActivity#sendConfidenceToAuthFramework(AuthenticationStatusData, float)}
+	 * .
+	 * 
+	 * @param _confidence
+	 */
+	private void sendConfidenceToAuthFrameworkInvalid() {
+		sendConfidenceToAuthFramework(FaceAuthenticationModule.AUTHENTICATION_STATUS_FAILED, 0);
 	}
 
 	private void updateUiFromCurrentUser() {
@@ -600,7 +624,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		// start stuff that we need for recording pictures
 		mIsTakingPictures = true;
 		mPhotoGyroListener.reset();
-		images.clear();
+		mImages.clear();
 		SensorComponent.instance().start();
 		PanshotUtil.playSoundfile(this, R.raw.beep);
 		if (!SharedPrefs.isFrontalOnly(this)) {
@@ -610,7 +634,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	}
 
 	private void stopTakingPictures() {
-		Log.d(OldMainActivity.class.getSimpleName(), "stopping image taking. we recorded " + images.size() + " images.");
+		Log.d(OldMainActivity.class.getSimpleName(), "stopping image taking. we recorded " + mImages.size() + " images.");
 		mIsTakingPictures = false;
 		SensorComponent.instance().stop();
 		if (!SharedPrefs.isFrontalOnly(this)) {
@@ -690,7 +714,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 			// remember image
 			PanshotImage panshotImage = new PanshotImage(graycopy, grayface, sensorValues.getRotationValues().value,
 					(acc == null ? null : acc.value), (light == null ? null : light.value), timestamp);
-			images.add(panshotImage);
+			mImages.add(panshotImage);
 			if (SharedPrefs.isFrontalOnly(this)) {
 				// we've taken 1 image, stop recording automatically right now
 				runOnUiThread(new Runnable() {
@@ -707,14 +731,18 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	public void detectFacesInRecordedImagesDependingOnAngle() {
 		// determine angle index and angle normalization value
 		GenericTuple2<Integer, Float[]> angleIndexNormaliser = PanshotUtil.calculateAngleIndexAndNormalizer(
-				images.get(0).angleValues, images.get(images.size() - 1).angleValues);
+				mImages.get(0).angleValues, mImages.get(mImages.size() - 1).angleValues);
+		Log.d(TAG, "mImages.get(0)=" + mImages.get(0));
+		Log.d(TAG, "mImages.get(mImages.size() - 1)=" + mImages.get(mImages.size() - 1));
+		Log.d(TAG, "angleIndexNormaliser=" + angleIndexNormaliser.value1 + ", " + Arrays.toString(angleIndexNormaliser.value2));
 		int angleIndex = angleIndexNormaliser.value1;
 		float angleNormalizer = angleIndexNormaliser.value2[angleIndex];
-		for (PanshotImage panshotImage : images) {
+		for (PanshotImage panshotImage : mImages) {
 			// remember recognition related info
 			panshotImage.rec.angleIndex = angleIndex;
 			// normalize this image's panshot rotation axis' angle values
-			float angle = panshotImage.angleValues[angleIndex] - angleNormalizer;
+			panshotImage.angleValues[angleIndex] -= angleNormalizer;
+			float angle = panshotImage.angleValues[angleIndex];
 			// select face detection classifier
 			CascadeClassifier cascadeClassifier = mJavaDetector_LBPCascadeFrontalface;
 			DetectionBasedTracker detectionBasedTracker = mNativeDetector_LBPCascadeFrontalface;
@@ -810,14 +838,16 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		} else {
 			stopTakingPictures();
 			// decide what to do with the images
-			if (images.size() > 0) {
+			if (mImages.size() > 0) {
 				// do face detection for each image
 				detectFacesInRecordedImagesDependingOnAngle();
+				Log.d(TAG, "Recorded images after face detection" + mImages.toString());
+
 				switch (mFaceDetectionPurpose) {
 
 					case RECORD_DATA:
 						// save images
-						DataUtil.savePanshotImages(this, mCurrentUser, images, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
+						DataUtil.savePanshotImages(this, mCurrentUser, mImages, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
 								SharedPrefs.isFrontalOnly(this), SharedPrefs.getAngleBetweenClassifiers(this));
 						break;
 
@@ -829,17 +859,18 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							Toast.makeText(this,
 									getResources().getText(R.string.error_classifier_could_not_be_loaded, "aborting"),
 									Toast.LENGTH_SHORT).show();
-							return;
+							break;
 						}
 
 						// only use images in which faces where
 						// detected
-						List<PanshotImage> imagesWithFaces = FunUtil.filter(images, new FunFilter<PanshotImage>() {
+						List<PanshotImage> imagesWithFaces = FunUtil.filter(mImages, new FunFilter<PanshotImage>() {
 							@Override
 							public boolean filter(PanshotImage _t) {
 								return _t.grayFace != null;
 							}
 						});
+
 						// normalise energy of all images
 						if (SharedPrefs.useImageEnergyNormlization(FaceDetectionActivity.this)) {
 							FunUtil.apply(imagesWithFaces, new FunApply<PanshotImage, PanshotImage>() {
@@ -890,7 +921,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						switch (mFaceDetectionPurpose) {
 							case AUTHENTICATION: {
 								if (imagesWithFaces.size() == 0) {
-									sendConfidenceToAuthFramework(0f);
+									// sendConfidenceToAuthFrameworkInvalid();
+									// repeat until we have a face
 									break;
 								}
 
@@ -901,7 +933,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 												.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
 														SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
 														SharedPrefs.getAngleBetweenClassifiers(this));
-										sendConfidenceToAuthFramework(classificationResult.value2.floatValue());
+										sendConfidenceToAuthFrameworkOk(classificationResult.value2.floatValue());
 										break;
 									}
 
@@ -910,7 +942,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 												.classifySvm(imagesWithFaces, SharedPrefs.usePca(this),
 														SharedPrefs.getAmountOfPcaFeatures(this),
 														SharedPrefs.getAngleBetweenClassifiers(this));
-										sendConfidenceToAuthFramework(classificationResult.value2.floatValue());
+										sendConfidenceToAuthFrameworkOk(classificationResult.value2.floatValue());
 										break;
 									}
 								}
@@ -962,7 +994,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 						}
 
 				}
-				images.clear();
+				mImages.clear();
 			}
 		}
 	}

@@ -54,6 +54,7 @@
     <string name="done">Done</string>
     <string name="title_manage_data">Manage Face Authentication Data</string>
     <string name="title_settings">Face Authentication Settings</string>
+    <string name="title_face_detection">Face Detection</string>
     <string name="delete_identity">Delete identity</string>
     <string name="test_face_authentication">Test face Authentication</string>
     <string name="retrain_classifiers_background">Retrain classifiers using existing face data (background)</string>

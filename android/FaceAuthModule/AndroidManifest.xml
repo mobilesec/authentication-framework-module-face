@@ -46,7 +46,7 @@
         </activity>
         
         <activity android:name="at.usmile.auth.module.face.activity.FaceDetectionActivity"
-                  android:label="@string/title_settings"
+                  android:label="@string/title_face_detection"
                   android:screenOrientation="landscape"
                   android:configChanges="keyboardHidden|orientation">
         </activity>

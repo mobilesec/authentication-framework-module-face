@@ -132,6 +132,8 @@ public class RecognitionModule implements Serializable {
 		GenericTuple2<User, Double> mostVotedUser = null;
 		for (PanshotImage image : _images) {
 			int classifierIndex = getClassifierIndexForAngle(image.angleValues[image.rec.angleIndex], _classifierSeparationAngle);
+			Log.d(TAG, "angle=" + image.angleValues[image.rec.angleIndex] + "_classifierSeparationAngle="
+					+ _classifierSeparationAngle + ", classifierIndex=" + classifierIndex);
 			if (!mSvmClassifiers.containsKey(classifierIndex)) {
 				// skip, we cannot classify images we have no classifier for
 				Log.i("SVM", "no classifier trained for index: " + classifierIndex);

@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import at.usmile.auth.framework.api.AbstractAuthenticationModule;
@@ -17,6 +18,10 @@ public class FaceAuthenticationModule extends AbstractAuthenticationModule {
 	public static final String START_AUTHENTICATION = "START_AUTHENTICATION";
 	public static final String ON_AUTHENTICATION = "ON_AUTHENTICATION";
 	public static final String CONFIDENCE = "CONFIDENCE";
+
+	public static final String AUTHENTICATION_STATUS = "AUTHENTICATION_STATUS";
+	public static final String AUTHENTICATION_STATUS_OK = "AUTHENTICATION_STATUS_OK";
+	public static final String AUTHENTICATION_STATUS_FAILED = "AUTHENTICATION_STATUS_FAILED";
 
 	// ================================================================================================================
 	// MEMBERS
@@ -32,12 +37,23 @@ public class FaceAuthenticationModule extends AbstractAuthenticationModule {
 		public void onReceive(Context context, Intent intent) {
 			Log.d(TAG, "onReceiveBroadcast(" + intent + ")");
 
-			// reported confidence from the used authentication
-			double confidence = intent.getDoubleExtra(CONFIDENCE, 0.0);
-			Log.d(TAG, "confidence = " + confidence);
-
-			// push update to framework
-			publishUpdate(new AuthenticationStatusData().status(Status.OPERATIONAL).confidence(confidence));
+			Bundle extras = intent.getExtras();
+			if (extras == null) {
+				Log.d(TAG, "no extras set");
+				publishUpdate(new AuthenticationStatusData().status(Status.UNKNOWN));
+			} else {
+				String authStatus = extras.getString(AUTHENTICATION_STATUS);
+				if (authStatus.equals(AUTHENTICATION_STATUS_FAILED)) {
+					Log.d(TAG, "no auth status set");
+					publishUpdate(new AuthenticationStatusData().status(Status.UNKNOWN));
+				} else {
+					// reported confidence from the used authentication
+					double confidence = intent.getDoubleExtra(CONFIDENCE, 0.0);
+					Log.d(TAG, "confidence = " + confidence);
+					// push update to framework
+					publishUpdate(new AuthenticationStatusData().status(Status.OPERATIONAL).confidence(confidence));
+				}
+			}
 		}
 	};
 
@@ -61,9 +77,6 @@ public class FaceAuthenticationModule extends AbstractAuthenticationModule {
 	@Override
 	protected void onUpdateAuthenticationStatus(int reason) {
 		Log.d(TAG, "onUpdateAuthenticationStatus(" + reason + ")");
-
-		// TODO explain
-		sendBroadcast(new Intent(START_AUTHENTICATION));
 
 		// switch to your target Activity here
 		Intent i = new Intent(this, FaceDetectionActivity.class);
