@@ -92,8 +92,6 @@ public class MainActivity extends Activity {
 		});
 
 		mButtonRetrainClassifiersBackground = (Button) findViewById(R.id.button_retrain_classifiers_background);
-		// TODO eg use file in FS as lock for this button (only unlock button if
-		// file does not exist at app start)
 		mButtonRetrainClassifiersBackground.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View _v) {
@@ -273,6 +271,9 @@ public class MainActivity extends Activity {
 		IntentFilter intentFilter = new IntentFilter(Statics.TRAINING_SERVICE_BROADCAST_ACTION);
 		// Registers the DownloadStateReceiver and its intent filters
 		LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
+
+		// update UI with current service state
+		setTrainingOngoingUIEnabled(!TrainingService.isServiceRunning(this));
 	}
 
 	/**
@@ -311,5 +312,4 @@ public class MainActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 	}
-
 }

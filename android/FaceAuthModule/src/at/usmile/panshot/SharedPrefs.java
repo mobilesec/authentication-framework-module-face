@@ -115,7 +115,7 @@ public abstract class SharedPrefs {
 
 	public static int getAmountOfPcaFeatures(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getInt(
-				SharedPrefs.PCA_AMOUNT_OF_FEATURES, 50);
+				SharedPrefs.PCA_AMOUNT_OF_FEATURES, 100);
 	}
 
 	public static RecognitionType getRecognitionType(Context _context) {

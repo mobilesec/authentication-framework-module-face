@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="libs/opencsv-2.3.jar"/>
 	<classpathentry kind="lib" path="libs/libsvm.jar"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Fun"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/FunUtil"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/OpenCV Library - 2.4.10"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

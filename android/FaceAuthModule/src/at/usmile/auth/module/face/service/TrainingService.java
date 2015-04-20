@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources.NotFoundException;
 import android.support.v4.content.LocalBroadcastManager;
@@ -44,7 +45,7 @@ public class TrainingService extends IntentService {
 		// prepare back-report intent
 		Intent localIntent = new Intent(Statics.TRAINING_SERVICE_BROADCAST_ACTION);
 
-		// // train and persist recognitionmodule
+		// train and persist recognitionmodule
 		RecognitionModule recognitionModule = new RecognitionModule();
 		recognitionModule.train(this, SharedPrefs.getAngleBetweenClassifiers(this),
 				SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(this));
@@ -69,5 +70,9 @@ public class TrainingService extends IntentService {
 		// Broadcasts the Intent to receivers in this app
 		LocalBroadcastManager.getInstance(this).sendBroadcast(localIntent);
 		Log.d(TAG, "TrainingService#onHandleIntent() finished.");
+	}
+
+	public static boolean isServiceRunning(Context _context) {
+		return ServiceUtil.isServiceRunning(_context, TrainingService.class);
 	}
 }
