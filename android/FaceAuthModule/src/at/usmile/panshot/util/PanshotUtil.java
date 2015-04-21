@@ -167,6 +167,23 @@ public class PanshotUtil {
 	}
 
 	/**
+	 * See {@link PanshotUtil#matToMap(Mat, MatDataExtractor)}.
+	 * 
+	 * @param _mat
+	 * @return
+	 */
+	public static Map<String, Object> matToMapByte(Mat _mat) {
+		return matToMap(_mat, new MatDataGetter<byte[]>() {
+			@Override
+			public byte[] getData(Mat _mat, int _length) {
+				byte[] data = new byte[_length];
+				_mat.get(0, 0, data);
+				return data;
+			}
+		});
+	}
+
+	/**
 	 * * Convert a Map of a OpenCV matrix's attributes to the original map (e.g.
 	 * for deserialization). To be used in combination with
 	 * {@link PanshotUtil#matToMap(Mat)}
@@ -195,10 +212,25 @@ public class PanshotUtil {
 	 * @param _map
 	 * @return
 	 */
-	public static <T> Mat matFromMapFloat(Map<String, Object> _map) {
+	public static Mat matFromMapFloat(Map<String, Object> _map) {
 		return matFromMap(_map, new MatDataSetter<float[]>() {
 			@Override
 			public void setData(Mat _mat, float[] _data) {
+				_mat.put(0, 0, _data);
+			}
+		});
+	}
+
+	/**
+	 * See {@link PanshotUtil#matFromMap(Map, MatDataSetter)}.
+	 * 
+	 * @param _map
+	 * @return
+	 */
+	public static Mat matFromMapByte(Map<String, Object> _map) {
+		return matFromMap(_map, new MatDataSetter<byte[]>() {
+			@Override
+			public void setData(Mat _mat, byte[] _data) {
 				_mat.put(0, 0, _data);
 			}
 		});

@@ -284,13 +284,13 @@ public class RecognitionModule implements Serializable {
 	private void writeObject(ObjectOutputStream out) throws IOException {
 		// out.defaultWriteObject();
 		out.writeObject(mSvmClassifiers);
-		// TODO knn
+		out.writeObject(mKnnClassifiers);
 	}
 
 	@SuppressWarnings("unchecked")
 	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
 		// in.defaultReadObject();
 		mSvmClassifiers = (Map<Integer, SvmClassifier>) in.readObject();
-		// TODO knn
+		mKnnClassifiers = (Map<Integer, KnnClassifier>) in.readObject();
 	}
 }

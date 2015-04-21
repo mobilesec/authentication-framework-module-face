@@ -1,10 +1,21 @@
 package at.usmile.panshot;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.opencv.core.Mat;
 
-public class PanshotImage {
+import android.util.Log;
+import at.usmile.panshot.util.PanshotUtil;
+
+public class PanshotImage implements Serializable {
+	private static final long serialVersionUID = 1L;
+
+	private static final String TAG = PanshotImage.class.getSimpleName();
 
 	// ================================================================================================================
 	// MEMBERS
@@ -57,4 +68,41 @@ public class PanshotImage {
 		}
 	}
 
+	// ========================================================================================================================
+	// SERIALIZATION
+
+	/**
+	 * We need custom serialization as we can't serialize opencv members.
+	 */
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		if (pcaFace == null) {
+			out.writeObject(null);
+		} else {
+			out.writeObject(PanshotUtil.matToMapFloat(pcaFace));
+		}
+		if (grayFace == null) {
+			out.writeObject(null);
+		} else {
+			Log.d(TAG, "grayFace=" + grayFace);
+			out.writeObject(PanshotUtil.matToMapByte(grayFace));
+		}
+		out.writeObject(rec.user);
+	}
+
+	/**
+	 * We need custom serialization as we can't serialize opencv members.
+	 */
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		Object tmp = in.readObject();
+		if (tmp != null) {
+			pcaFace = PanshotUtil.matFromMapFloat((Map<String, Object>) tmp);
+		}
+		tmp = in.readObject();
+		if (tmp != null) {
+			grayFace = PanshotUtil.matFromMapByte((Map<String, Object>) tmp);
+		}
+		rec = new RecognitionInfo();
+		rec.user = (User) in.readObject();
+	}
 }

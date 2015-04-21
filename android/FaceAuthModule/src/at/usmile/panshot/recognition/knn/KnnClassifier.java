@@ -1,5 +1,9 @@
 package at.usmile.panshot.recognition.knn;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,9 +16,11 @@ import at.usmile.panshot.User;
 import at.usmile.panshot.recognition.FaceClassifier;
 import at.usmile.panshot.recognition.TrainingData;
 import at.usmile.panshot.util.PCAUtil;
+import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 
-public class KnnClassifier implements FaceClassifier {
+public class KnnClassifier implements FaceClassifier, Serializable {
+	private static final long serialVersionUID = 1L;
 
 	// ================================================================================================================
 	// MEMBERS
@@ -94,7 +100,9 @@ public class KnnClassifier implements FaceClassifier {
 				}
 			} else {
 				// project data into eigenspace
-				_image.pcaFace = PCAUtil.pcaProject(_image, mPcaMean, mPcaEigenvectors);
+				if (_image.pcaFace == null) {
+					_image.pcaFace = PCAUtil.pcaProject(_image, mPcaMean, mPcaEigenvectors);
+				}
 				// measure distance in eigenspace
 				for (int row = 0; row < image.pcaFace.rows() && row < _pcaAmountOfFeatures; row++) {
 					for (int col = 0; col < image.pcaFace.cols(); col++) {
@@ -127,5 +135,41 @@ public class KnnClassifier implements FaceClassifier {
 			}
 		}
 		return neighbours;
+	}
+
+	// ========================================================================================================================
+	// SERIALIZATION
+
+	/**
+	 * We need custom serialization as we can't serialize opencv members.
+	 */
+	private void writeObject(ObjectOutputStream out) throws IOException {
+		out.writeObject(mImages);
+		if (mPcaMean == null) {
+			out.writeObject(null);
+		} else {
+			out.writeObject(PanshotUtil.matToMapFloat(mPcaMean));
+		}
+		if (mPcaEigenvectors == null) {
+			out.writeObject(null);
+		} else {
+			out.writeObject(PanshotUtil.matToMapFloat(mPcaEigenvectors));
+		}
+	}
+
+	/**
+	 * We need custom serialization as we can't serialize opencv members.
+	 */
+	@SuppressWarnings("unchecked")
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+		mImages = (List<PanshotImage>) in.readObject();
+		Object tmp = in.readObject();
+		if (tmp != null) {
+			mPcaMean = PanshotUtil.matFromMapFloat((Map<String, Object>) tmp);
+		}
+		tmp = in.readObject();
+		if (tmp != null) {
+			mPcaEigenvectors = PanshotUtil.matFromMapFloat((Map<String, Object>) tmp);
+		}
 	}
 }

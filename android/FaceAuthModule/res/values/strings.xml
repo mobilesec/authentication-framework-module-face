@@ -45,7 +45,7 @@
     <string name="radiobutton_knn">KNN</string>
     <string name="radiobutton_svm">SVM</string>
     <string name="classifier_type">Changing these settings requires the classifiers to be retrained! Do so by starting classifier training after leaving settings.\n\nClassifier type</string>
-    <string name="face_size">Face size [px]</string>
+    <string name="face_size">Resized face width/height [px]</string>
     <string name="pca_features">Amount of PCA features</string>
     <string name="no_faces_detected">No faces detected.</string>
     <string name="trigger_training">Record new face data</string>

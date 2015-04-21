@@ -49,7 +49,7 @@ import at.usmile.panshot.sensor.SensorValues.Observation;
 import at.usmile.tuple.GenericTuple2;
 import au.com.bytecode.opencsv.CSVReader;
 
-// TODO extract all context stuff out of this class -> FaceModuleUtil
+// TODO extract all UI stuff to FaceModuleUtil
 // TODO comments
 
 /**
@@ -369,20 +369,20 @@ public class DataUtil {
 		return panshotImages;
 	}
 
-	public static void serializeRecognitionModule(File directory, RecognitionModule mRecognitionModule) throws IOException {
+	public static void serializeRecognitionModule(File _directory, RecognitionModule _recognitionModule) throws IOException {
 		ObjectOutputStream objectOutputStream = null;
-		if (!directory.exists()) {
-			directory.mkdir();
+		if (!_directory.exists()) {
+			_directory.mkdir();
 		}
 		try {
 			// serialize recognition module
-			objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File(directory,
+			objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File(_directory,
 					"recognition_module.ser"))));
-			objectOutputStream.writeObject(mRecognitionModule);
+			objectOutputStream.writeObject(_recognitionModule);
 
 			// store native data
-			for (SvmClassifier c : mRecognitionModule.getSvmClassifiers().values()) {
-				c.storeNativeData(directory);
+			for (SvmClassifier c : _recognitionModule.getSvmClassifiers().values()) {
+				c.storeNativeData(_directory);
 			}
 
 		} finally {
