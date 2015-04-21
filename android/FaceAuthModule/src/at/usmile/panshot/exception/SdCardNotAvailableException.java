@@ -1,4 +1,4 @@
-package at.usmile.panshot.nu;
+package at.usmile.panshot.exception;
 
 import java.io.IOException;
 

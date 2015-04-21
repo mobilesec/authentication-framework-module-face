@@ -22,10 +22,10 @@ import android.util.Log;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.panshot.User;
 import at.usmile.panshot.recognition.FaceClassifier;
-import at.usmile.panshot.recognition.PCAUtil;
-import at.usmile.panshot.recognition.RecUtil;
 import at.usmile.panshot.recognition.TrainingData;
+import at.usmile.panshot.util.PCAUtil;
 import at.usmile.panshot.util.PanshotUtil;
+import at.usmile.panshot.util.RecognitionUtil;
 import at.usmile.tuple.GenericTuple2;
 
 /**
@@ -115,7 +115,7 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 			if (!_usePca) {
 				// use pixel features directly
 				// get the pixel data from the detected face data
-				double[] features = RecUtil.transformImageToFeatureVector(panshotImage.grayFace);
+				double[] features = RecognitionUtil.transformImageToFeatureVector(panshotImage.grayFace);
 				// create a node value for every pixel
 				svmProblem.x[imageNr] = new svm_node[features.length];
 				for (int featureNr = 0; featureNr < features.length; featureNr++) {
@@ -169,7 +169,7 @@ public class SvmClassifier implements FaceClassifier, Serializable {
 		svm_node[] nodes = null;
 		if (!_usePca) {
 			// get the pixel data from the recognized face
-			double[] features = RecUtil.transformImageToFeatureVector(_image.grayFace);
+			double[] features = RecognitionUtil.transformImageToFeatureVector(_image.grayFace);
 			// creates nodes from features
 			nodes = new svm_node[features.length];
 			for (int featureNr = 0; featureNr < features.length; featureNr++) {

@@ -1,4 +1,4 @@
-package at.usmile.panshot;
+package at.usmile.panshot.recognition;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,8 +10,8 @@ import org.opencv.core.Mat;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.panshot.User;
 import at.usmile.panshot.recognition.FaceClassifier;
-import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.TrainingData;
+import at.usmile.panshot.util.PCAUtil;
 import at.usmile.tuple.GenericTuple2;
 
 public class KnnClassifier implements FaceClassifier {

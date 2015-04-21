@@ -1,4 +1,4 @@
-package at.usmile.panshot.nu;
+package at.usmile.panshot.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
@@ -28,18 +30,22 @@ import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 import android.content.res.Resources.NotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.Rect;
+import android.graphics.YuvImage;
+import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.auth.module.face.activity.OldMainActivity;
 import at.usmile.panshot.PanshotImage;
-import at.usmile.panshot.SensorComponent;
-import at.usmile.panshot.SensorValues;
-import at.usmile.panshot.SensorValues.Observation;
 import at.usmile.panshot.User;
+import at.usmile.panshot.exception.SdCardNotAvailableException;
+import at.usmile.panshot.recognition.RecognitionModule;
 import at.usmile.panshot.recognition.svm.SvmClassifier;
-import at.usmile.panshot.util.MediaSaveUtil;
-import at.usmile.panshot.util.PanshotUtil;
+import at.usmile.panshot.sensor.SensorComponent;
+import at.usmile.panshot.sensor.SensorValues;
+import at.usmile.panshot.sensor.SensorValues.Observation;
 import at.usmile.tuple.GenericTuple2;
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -79,11 +85,10 @@ public class DataUtil {
 	}
 
 	public static List<User> loadExistingUsers(Context _context) throws NotFoundException, IOException {
-		if (!MediaSaveUtil.isSdCardAvailableRW()) {
+		if (!isSdCardAvailableRW()) {
 			throw new SdCardNotAvailableException();
 		}
-		File mediaDir = MediaSaveUtil.getMediaStorageDirectory(_context.getResources().getString(
-				R.string.app_media_directory_name));
+		File mediaDir = getMediaStorageDirectory(_context.getResources().getString(R.string.app_media_directory_name));
 		// load from fs/db
 		File[] files = mediaDir.listFiles(PANSHOT_USER_FOLDER_FILE_FILTER);
 		List<User> list = new ArrayList<User>();
@@ -102,7 +107,7 @@ public class DataUtil {
 			int _angleArrayUsedIndex, String csvFileExtension, String _sessionId, boolean _useFrontalOnly,
 			float _panshotTargetMinAngle) {
 		// store images to sd card
-		if (!MediaSaveUtil.isSdCardAvailableRW()) {
+		if (!isSdCardAvailableRW()) {
 			Toast.makeText(_context, _context.getResources().getString(R.string.sd_card_not_available), Toast.LENGTH_SHORT)
 					.show();
 			return;
@@ -110,8 +115,7 @@ public class DataUtil {
 		File mediaDir = null;
 		try {
 			// ensure access to media directory
-			mediaDir = MediaSaveUtil.getMediaStorageDirectory(_context.getResources()
-					.getString(R.string.app_media_directory_name));
+			mediaDir = getMediaStorageDirectory(_context.getResources().getString(R.string.app_media_directory_name));
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 			Toast.makeText(_context, _context.getResources().getString(R.string.media_directory_not_found_exception),
@@ -128,7 +132,7 @@ public class DataUtil {
 		File userDir = null;
 		User user = _currentUser;
 		try {
-			userDir = MediaSaveUtil.ensureDirectoryExists(mediaDir, user.getFoldername());
+			userDir = ensureDirectoryExists(mediaDir, user.getFoldername());
 		} catch (IOException e) {
 			e.printStackTrace();
 			Toast.makeText(_context, _context.getResources().getString(R.string.user_directory_cannot_be_created),
@@ -138,7 +142,7 @@ public class DataUtil {
 		File panshotDir = null;
 		String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 		try {
-			panshotDir = MediaSaveUtil.ensureDirectoryExists(userDir, timestamp);
+			panshotDir = ensureDirectoryExists(userDir, timestamp);
 		} catch (IOException e) {
 			e.printStackTrace();
 			Toast.makeText(_context, _context.getResources().getString(R.string.panshot_directory_cannot_be_created),
@@ -167,9 +171,9 @@ public class DataUtil {
 			File imageFile = new File(panshotDir, "/" + filename + ".jpg");
 			File faceFile = new File(panshotDir, "/" + filename + "_face.jpg");
 			try {
-				MediaSaveUtil.saveMatToJpgFile(imageFile, image.grayImage);
+				saveMatToJpgFile(imageFile, image.grayImage);
 				if (image.grayFace != null) {
-					MediaSaveUtil.saveMatToJpgFile(faceFile, image.grayFace);
+					saveMatToJpgFile(faceFile, image.grayFace);
 				}
 			} catch (IOException e) {
 				Toast.makeText(_context, _context.getResources().getString(R.string.image_could_not_be_saved), Toast.LENGTH_LONG)
@@ -187,7 +191,7 @@ public class DataUtil {
 		// store csv file
 		String filename = user.getId() + "_" + timestamp + "_images";
 		try {
-			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + csvFileExtension);
+			saveTextToFile(textfileSb.toString(), panshotDir, filename + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
 			Toast.makeText(_context, _context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filename),
@@ -201,10 +205,11 @@ public class DataUtil {
 		}
 		String filenameAngle = user.getId() + "_" + timestamp + "_panshot_angles";
 		try {
-			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAngle + csvFileExtension);
+			saveTextToFile(textfileSb.toString(), panshotDir, filenameAngle + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(_context, _context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAngle),
+			Toast.makeText(_context,
+					_context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAngle),
 					Toast.LENGTH_LONG).show();
 			return;
 		}
@@ -214,7 +219,7 @@ public class DataUtil {
 		}
 		String filenameAcceleration = user.getId() + "_" + timestamp + "_panshot_accelerations";
 		try {
-			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAcceleration + csvFileExtension);
+			saveTextToFile(textfileSb.toString(), panshotDir, filenameAcceleration + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
 			Toast.makeText(_context,
@@ -231,7 +236,7 @@ public class DataUtil {
 				+ filenameAcceleration + "\n");
 		filename = user.getId() + "_" + timestamp + "_panshot_files";
 		try {
-			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + csvFileExtension);
+			saveTextToFile(textfileSb.toString(), panshotDir, filename + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
 			Toast.makeText(_context, _context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filename),
@@ -264,7 +269,7 @@ public class DataUtil {
 
 	public static List<PanshotImage> loadTrainingData(Context _context) {
 		// store images to sd card
-		if (!MediaSaveUtil.isSdCardAvailableRW()) {
+		if (!isSdCardAvailableRW()) {
 			Toast.makeText(_context, _context.getResources().getString(R.string.sd_card_not_available), Toast.LENGTH_SHORT)
 					.show();
 			return null;
@@ -272,8 +277,7 @@ public class DataUtil {
 		File mediaDir = null;
 		try {
 			// ensure access to media directory
-			mediaDir = MediaSaveUtil.getMediaStorageDirectory(_context.getResources()
-					.getString(R.string.app_media_directory_name));
+			mediaDir = getMediaStorageDirectory(_context.getResources().getString(R.string.app_media_directory_name));
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 			Toast.makeText(_context, _context.getResources().getString(R.string.media_directory_not_found_exception),
@@ -415,5 +419,91 @@ public class DataUtil {
 			}
 		}
 		return r;
+	}
+
+	/**
+	 * @return true if sd card is available (mounted) with read/write access.
+	 */
+	public static boolean isSdCardAvailableRW() {
+		if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED))
+			return true;
+		return false;
+	}
+
+	public static File getMediaStorageDirectory(String name) throws IOException {
+		// This location works best if you want the created images to be shared
+		// between applications and persist after your app has been uninstalled.
+		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), name);
+		// Create the storage directory if it does not exist
+		if (!mediaStorageDir.exists()) {
+			LOGGER.info("getMediaStorageDirectory(): creating directory " + mediaStorageDir.getAbsolutePath());
+			if (!mediaStorageDir.mkdirs()) {
+				throw new IOException("Unable to create directory: " + mediaStorageDir);
+			}
+		}
+		return mediaStorageDir;
+	}
+
+	public static File ensureDirectoryExists(File parent, String name) throws IOException {
+		File dir = new File(parent.getAbsolutePath() + "/" + name);
+		if (!dir.exists()) {
+			LOGGER.info("ensureDirectoryExists(): creating directory " + dir.getAbsolutePath());
+			if (!dir.mkdirs()) {
+				throw new IOException("Unable to create directory: " + dir);
+			}
+		}
+		return dir;
+	}
+
+	public static void saveYuvImageToJpgFile(File file, YuvImage image) throws IOException {
+		FileOutputStream filecon = new FileOutputStream(file);
+		image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 90, filecon);
+		filecon.close();
+	}
+
+	public static void saveMatToJpgFile(File file, Mat matWithFace) throws IOException {
+		Bitmap bitmap = Bitmap.createBitmap(matWithFace.cols(), matWithFace.rows(), Bitmap.Config.ARGB_8888);
+		Utils.matToBitmap(matWithFace, bitmap);
+		FileOutputStream out = new FileOutputStream(file);
+		bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+		out.close();
+	}
+
+	/**
+	 * Saves a bitmap to the sd card.
+	 * 
+	 * @param _b
+	 * @param _folderPath
+	 * @param _filename
+	 */
+	public static void saveBitmapToFs(Bitmap _b, String _folderPath, String _filename) {
+		try {
+			LOGGER.debug("trying to save bitmap to " + _folderPath + "/" + _filename);
+			File folder = new File(_folderPath);
+			folder.mkdirs();
+
+			FileOutputStream out = new FileOutputStream(_folderPath + "/" + _filename);
+			_b.compress(Bitmap.CompressFormat.PNG, 90, out);
+			LOGGER.debug("saving bitmap done.");
+		} catch (Exception e) {
+			LOGGER.warn("saving bitmap failed.");
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Saves text to a textfile. Assumes that the files does not exist yet.
+	 * 
+	 * @param _string
+	 * @param _parentDirectory
+	 * @param _filename
+	 * @throws IOException
+	 */
+	public static void saveTextToFile(String _string, File _parentDirectory, String _filename) throws IOException {
+		File textFile = new File(_parentDirectory, _filename);
+		FileWriter writer = new FileWriter(textFile);
+		writer.append(_string);
+		writer.flush();
+		writer.close();
 	}
 }

@@ -1,4 +1,4 @@
-package at.usmile.panshot.nu;
+package at.usmile.panshot.util;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.res.Resources.NotFoundException;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.User;
+import at.usmile.panshot.exception.SdCardNotAvailableException;
 
 /**
  * General tasks of the face module across Activities including UI interactions,

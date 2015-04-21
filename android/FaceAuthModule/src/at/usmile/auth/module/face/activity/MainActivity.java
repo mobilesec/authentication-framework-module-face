@@ -27,9 +27,9 @@ import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.auth.module.face.service.TrainingService;
 import at.usmile.panshot.SharedPrefs;
-import at.usmile.panshot.nu.DataUtil;
-import at.usmile.panshot.nu.RecognitionModule;
-import at.usmile.panshot.util.MediaSaveUtil;
+import at.usmile.panshot.Statics;
+import at.usmile.panshot.recognition.RecognitionModule;
+import at.usmile.panshot.util.DataUtil;
 
 /**
  * Entry point if user opens app to train or change settings (= if not called by
@@ -150,7 +150,7 @@ public class MainActivity extends Activity {
 										SharedPrefs.getAngleBetweenClassifiers(MainActivity.this),
 										SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(MainActivity.this));
 								try {
-									File directory = MediaSaveUtil.getMediaStorageDirectory(getResources().getString(
+									File directory = DataUtil.getMediaStorageDirectory(getResources().getString(
 											R.string.app_classifier_directory_name));
 									DataUtil.serializeRecognitionModule(directory, recognitionModule);
 								} catch (NotFoundException e2) {

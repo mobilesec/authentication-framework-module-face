@@ -1,4 +1,4 @@
-package at.usmile.panshot.nu;
+package at.usmile.panshot.recognition;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -23,11 +23,11 @@ import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.panshot.SharedPrefs;
 import at.usmile.panshot.User;
-import at.usmile.panshot.recognition.PCAUtil;
-import at.usmile.panshot.recognition.TrainingData;
 import at.usmile.panshot.recognition.knn.DistanceMetric;
 import at.usmile.panshot.recognition.knn.KnnClassifier;
 import at.usmile.panshot.recognition.svm.SvmClassifier;
+import at.usmile.panshot.util.DataUtil;
+import at.usmile.panshot.util.PCAUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 import at.usmile.tuple.GenericTuple3;

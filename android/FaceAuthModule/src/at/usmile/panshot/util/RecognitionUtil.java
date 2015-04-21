@@ -1,4 +1,4 @@
-package at.usmile.panshot.recognition;
+package at.usmile.panshot.util;
 
 import java.util.List;
 
@@ -11,7 +11,7 @@ import org.opencv.core.Mat;
  * @date 4 Apr 2014
  * @version 1
  */
-public class RecUtil {
+public class RecognitionUtil {
 
 	// ================================================================================================================
 	// MEMBERS
@@ -19,7 +19,7 @@ public class RecUtil {
 	// ================================================================================================================
 	// METHODS
 
-	private static final String TAG = RecUtil.class.getSimpleName();
+	private static final String TAG = RecognitionUtil.class.getSimpleName();
 
 	/**
 	 * Get the pixel data from an image as double array.

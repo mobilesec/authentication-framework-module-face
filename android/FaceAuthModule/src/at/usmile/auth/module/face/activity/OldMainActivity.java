@@ -76,20 +76,20 @@ import at.usmile.functional.FunApply;
 import at.usmile.functional.FunFilter;
 import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
-import at.usmile.panshot.PhotoGyroListener;
-import at.usmile.panshot.SensorComponent;
-import at.usmile.panshot.SensorValues;
-import at.usmile.panshot.SensorValues.Observation;
 import at.usmile.panshot.SharedPrefs;
 import at.usmile.panshot.User;
 import at.usmile.panshot.genericobserver.GenericObservable;
 import at.usmile.panshot.genericobserver.GenericObserver;
-import at.usmile.panshot.recognition.PCAUtil;
 import at.usmile.panshot.recognition.TrainingData;
 import at.usmile.panshot.recognition.knn.DistanceMetric;
 import at.usmile.panshot.recognition.knn.KnnClassifier;
 import at.usmile.panshot.recognition.svm.SvmClassifier;
-import at.usmile.panshot.util.MediaSaveUtil;
+import at.usmile.panshot.sensor.PhotoGyroListener;
+import at.usmile.panshot.sensor.SensorComponent;
+import at.usmile.panshot.sensor.SensorValues;
+import at.usmile.panshot.sensor.SensorValues.Observation;
+import at.usmile.panshot.util.DataUtil;
+import at.usmile.panshot.util.PCAUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 import at.usmile.tuple.GenericTuple3;
@@ -688,7 +688,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 		}
 
 		private void loadUsersAndUpdateUi() {
-			if (!MediaSaveUtil.isSdCardAvailableRW()) {
+			if (!DataUtil.isSdCardAvailableRW()) {
 				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.sd_card_not_available),
 						Toast.LENGTH_LONG).show();
 				return;
@@ -719,7 +719,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 		}
 
 		public List<User> loadExistingUsers() throws NotFoundException, IOException {
-			File mediaDir = MediaSaveUtil.getMediaStorageDirectory(getResources().getString(R.string.app_media_directory_name));
+			File mediaDir = DataUtil.getMediaStorageDirectory(getResources().getString(R.string.app_media_directory_name));
 			// load from fs/db
 			File[] files = mediaDir.listFiles();
 			List<User> list = new ArrayList<User>();
@@ -859,7 +859,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_3, getActivity(),
 					((OldMainActivity) getActivity()).mLoaderCallback);
 
-			if (!MediaSaveUtil.isSdCardAvailableRW()) {
+			if (!DataUtil.isSdCardAvailableRW()) {
 				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.sd_card_not_available),
 						Toast.LENGTH_LONG).show();
 				return;
@@ -912,7 +912,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 
 		private void savePanshotImages() {
 			// store images to sd card
-			if (!MediaSaveUtil.isSdCardAvailableRW()) {
+			if (!DataUtil.isSdCardAvailableRW()) {
 				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.sd_card_not_available),
 						Toast.LENGTH_SHORT).show();
 				return;
@@ -920,7 +920,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			File mediaDir = null;
 			try {
 				// ensure access to media directory
-				mediaDir = MediaSaveUtil.getMediaStorageDirectory(getActivity().getResources().getString(
+				mediaDir = DataUtil.getMediaStorageDirectory(getActivity().getResources().getString(
 						R.string.app_media_directory_name));
 			} catch (NotFoundException e) {
 				e.printStackTrace();
@@ -939,7 +939,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			File userDir = null;
 			User user = ((OldMainActivity) getActivity()).mCurrentUser;
 			try {
-				userDir = MediaSaveUtil.ensureDirectoryExists(mediaDir, user.getFoldername());
+				userDir = DataUtil.ensureDirectoryExists(mediaDir, user.getFoldername());
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.user_directory_cannot_be_created),
@@ -949,7 +949,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			File panshotDir = null;
 			String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 			try {
-				panshotDir = MediaSaveUtil.ensureDirectoryExists(userDir, timestamp);
+				panshotDir = DataUtil.ensureDirectoryExists(userDir, timestamp);
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
@@ -979,9 +979,9 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 				File imageFile = new File(panshotDir, "/" + filename + ".jpg");
 				File faceFile = new File(panshotDir, "/" + filename + "_face.jpg");
 				try {
-					MediaSaveUtil.saveMatToJpgFile(imageFile, image.grayImage);
+					DataUtil.saveMatToJpgFile(imageFile, image.grayImage);
 					if (image.grayFace != null) {
-						MediaSaveUtil.saveMatToJpgFile(faceFile, image.grayFace);
+						DataUtil.saveMatToJpgFile(faceFile, image.grayFace);
 					}
 				} catch (IOException e) {
 					Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.image_could_not_be_saved),
@@ -999,7 +999,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			// store csv file
 			String filename = user.getId() + "_" + timestamp + "_images";
 			try {
-				MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + CSV_FILENAME_EXTENSION);
+				DataUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + CSV_FILENAME_EXTENSION);
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
@@ -1014,7 +1014,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			}
 			String filenameAngle = user.getId() + "_" + timestamp + "_panshot_angles";
 			try {
-				MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAngle + CSV_FILENAME_EXTENSION);
+				DataUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAngle + CSV_FILENAME_EXTENSION);
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
@@ -1028,12 +1028,13 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			}
 			String filenameAcceleration = user.getId() + "_" + timestamp + "_panshot_accelerations";
 			try {
-				MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAcceleration + CSV_FILENAME_EXTENSION);
+				DataUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAcceleration + CSV_FILENAME_EXTENSION);
 			} catch (IOException e) {
 				e.printStackTrace();
-				Toast.makeText(getActivity(),
-						getActivity().getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAcceleration),
-						Toast.LENGTH_LONG).show();
+				Toast.makeText(
+						getActivity(),
+						getActivity().getResources().getString(R.string.error_could_not_save_metadata_to_file,
+								filenameAcceleration), Toast.LENGTH_LONG).show();
 				return;
 			}
 			// store descriptive file which has subjectid etc + link to the two
@@ -1045,7 +1046,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 					+ "," + filenameAcceleration + "\n");
 			filename = user.getId() + "_" + timestamp + "_panshot_files";
 			try {
-				MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + CSV_FILENAME_EXTENSION);
+				DataUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + CSV_FILENAME_EXTENSION);
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
@@ -1080,7 +1081,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 
 		private List<PanshotImage> loadTrainingData() {
 			// store images to sd card
-			if (!MediaSaveUtil.isSdCardAvailableRW()) {
+			if (!DataUtil.isSdCardAvailableRW()) {
 				Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.sd_card_not_available),
 						Toast.LENGTH_SHORT).show();
 				return null;
@@ -1088,7 +1089,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			File mediaDir = null;
 			try {
 				// ensure access to media directory
-				mediaDir = MediaSaveUtil.getMediaStorageDirectory(getActivity().getResources().getString(
+				mediaDir = DataUtil.getMediaStorageDirectory(getActivity().getResources().getString(
 						R.string.app_media_directory_name));
 			} catch (NotFoundException e) {
 				e.printStackTrace();
@@ -1240,11 +1241,11 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 												// DEBUG save energy image for
 												// review
 												try {
-													File f = MediaSaveUtil.getMediaStorageDirectory(getActivity().getResources()
+													File f = DataUtil.getMediaStorageDirectory(getActivity().getResources()
 															.getString(R.string.app_media_directory_name));
-													MediaSaveUtil.saveMatToJpgFile(new File(f.getAbsolutePath()
-															+ "/normalized.jpg"), normalizedMatEnergy.value1);
-													MediaSaveUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/energy.jpg"),
+													DataUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/normalized.jpg"),
+															normalizedMatEnergy.value1);
+													DataUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/energy.jpg"),
 															normalizedMatEnergy.value2);
 												} catch (NotFoundException e) {
 													e.printStackTrace();

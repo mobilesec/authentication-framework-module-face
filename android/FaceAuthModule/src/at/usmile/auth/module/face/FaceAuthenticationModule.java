@@ -11,7 +11,7 @@ import at.usmile.auth.framework.api.AbstractAuthenticationModule;
 import at.usmile.auth.framework.api.AuthenticationStatusData;
 import at.usmile.auth.framework.api.AuthenticationStatusData.Status;
 import at.usmile.auth.module.face.activity.FaceDetectionActivity;
-import at.usmile.auth.module.face.activity.Statics;
+import at.usmile.panshot.Statics;
 
 public class FaceAuthenticationModule extends AbstractAuthenticationModule {
 

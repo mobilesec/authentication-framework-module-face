@@ -1,4 +1,4 @@
-package at.usmile.panshot.nu;
+package at.usmile.panshot.util;
 
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;

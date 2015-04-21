@@ -1,4 +1,6 @@
-package at.usmile.auth.module.face.activity;
+package at.usmile.panshot;
+
+import at.usmile.auth.module.face.activity.FaceDetectionActivity;
 
 /**
  * Static keys and their possible values for consistently communicating infos

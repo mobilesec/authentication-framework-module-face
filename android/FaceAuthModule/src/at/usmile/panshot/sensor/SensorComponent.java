@@ -1,4 +1,4 @@
-package at.usmile.panshot;
+package at.usmile.panshot.sensor;
 
 import java.util.Observable;
 import java.util.Observer;

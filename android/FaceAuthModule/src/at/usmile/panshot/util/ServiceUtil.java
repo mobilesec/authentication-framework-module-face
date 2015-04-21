@@ -1,4 +1,4 @@
-package at.usmile.auth.module.face.service;
+package at.usmile.panshot.util;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;

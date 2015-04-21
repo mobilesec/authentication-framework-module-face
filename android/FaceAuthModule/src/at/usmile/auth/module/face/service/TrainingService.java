@@ -10,11 +10,11 @@ import android.content.res.Resources.NotFoundException;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import at.usmile.auth.module.face.R;
-import at.usmile.auth.module.face.activity.Statics;
 import at.usmile.panshot.SharedPrefs;
-import at.usmile.panshot.nu.DataUtil;
-import at.usmile.panshot.nu.RecognitionModule;
-import at.usmile.panshot.util.MediaSaveUtil;
+import at.usmile.panshot.Statics;
+import at.usmile.panshot.recognition.RecognitionModule;
+import at.usmile.panshot.util.DataUtil;
+import at.usmile.panshot.util.ServiceUtil;
 
 /**
  * Service that trains classifiers needed for face recognition, as training
@@ -50,8 +50,7 @@ public class TrainingService extends IntentService {
 		recognitionModule.train(this, SharedPrefs.getAngleBetweenClassifiers(this),
 				SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(this));
 		try {
-			File directory = MediaSaveUtil.getMediaStorageDirectory(getResources().getString(
-					R.string.app_classifier_directory_name));
+			File directory = DataUtil.getMediaStorageDirectory(getResources().getString(R.string.app_classifier_directory_name));
 			DataUtil.serializeRecognitionModule(directory, recognitionModule);
 
 			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FINISHED);

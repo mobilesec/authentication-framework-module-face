@@ -129,7 +129,7 @@ public class PanshotUtil {
 		Map<String, Object> map = new HashMap<String, Object>();
 
 		if (!mat.isContinuous()) {
-			Log.e(MediaSaveUtil.class.getSimpleName(), "Mat not continuous.");
+			Log.e(DataUtil.class.getSimpleName(), "Mat not continuous.");
 			return null;
 		}
 

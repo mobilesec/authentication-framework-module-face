@@ -19,9 +19,9 @@ import android.widget.Spinner;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.User;
-import at.usmile.panshot.nu.FaceModuleUtil;
-import at.usmile.panshot.nu.PackageUtil;
-import at.usmile.panshot.util.MediaSaveUtil;
+import at.usmile.panshot.util.DataUtil;
+import at.usmile.panshot.util.FaceModuleUtil;
+import at.usmile.panshot.util.PackageUtil;
 
 /**
  * Allows user to manipulate (e.g. delete) recorded auth data.
@@ -153,7 +153,7 @@ public class ManageDataActivity extends Activity {
 		}
 		// open OI FM
 		PackageUtil.openFolderInFileBrowser(this,
-				MediaSaveUtil.getMediaStorageDirectory(this.getResources().getString(R.string.app_media_directory_name))
+				DataUtil.getMediaStorageDirectory(this.getResources().getString(R.string.app_media_directory_name))
 						.getAbsolutePath());
 	}
 }

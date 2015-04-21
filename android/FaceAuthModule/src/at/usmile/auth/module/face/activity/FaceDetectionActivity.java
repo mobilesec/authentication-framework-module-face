@@ -54,16 +54,16 @@ import at.usmile.functional.FunApply;
 import at.usmile.functional.FunFilter;
 import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
-import at.usmile.panshot.PhotoGyroListener;
-import at.usmile.panshot.SensorComponent;
-import at.usmile.panshot.SensorValues;
-import at.usmile.panshot.SensorValues.Observation;
 import at.usmile.panshot.SharedPrefs;
+import at.usmile.panshot.Statics;
 import at.usmile.panshot.User;
-import at.usmile.panshot.nu.DataUtil;
-import at.usmile.panshot.nu.FaceModuleUtil;
-import at.usmile.panshot.nu.RecognitionModule;
-import at.usmile.panshot.util.MediaSaveUtil;
+import at.usmile.panshot.recognition.RecognitionModule;
+import at.usmile.panshot.sensor.PhotoGyroListener;
+import at.usmile.panshot.sensor.SensorComponent;
+import at.usmile.panshot.sensor.SensorValues;
+import at.usmile.panshot.sensor.SensorValues.Observation;
+import at.usmile.panshot.util.DataUtil;
+import at.usmile.panshot.util.FaceModuleUtil;
 import at.usmile.panshot.util.PanshotUtil;
 import at.usmile.tuple.GenericTuple2;
 import at.usmile.tuple.GenericTuple3;
@@ -338,7 +338,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 							}
 						});
 				try {
-					File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
+					File directory = DataUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
 							R.string.app_classifier_directory_name));
 					mRecognitionModule = DataUtil.deserializeRecognitiosModule(directory);
 				} catch (NotFoundException e1) {
@@ -366,7 +366,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 				textviewIdentity.setVisibility(View.INVISIBLE);
 
 				try {
-					File directory = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
+					File directory = DataUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources().getString(
 							R.string.app_classifier_directory_name));
 					mRecognitionModule = DataUtil.deserializeRecognitiosModule(directory);
 				} catch (NotFoundException e1) {
@@ -889,11 +889,11 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 									panshotImage.grayFace = normalizedMatEnergy.value1;
 									// DEBUG save energy image for review
 									try {
-										File f = MediaSaveUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
+										File f = DataUtil.getMediaStorageDirectory(FaceDetectionActivity.this.getResources()
 												.getString(R.string.app_media_directory_name));
-										MediaSaveUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/normalized.jpg"),
+										DataUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/normalized.jpg"),
 												normalizedMatEnergy.value1);
-										MediaSaveUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/energy.jpg"),
+										DataUtil.saveMatToJpgFile(new File(f.getAbsolutePath() + "/energy.jpg"),
 												normalizedMatEnergy.value2);
 									} catch (NotFoundException e) {
 										e.printStackTrace();

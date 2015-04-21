@@ -1,4 +1,4 @@
-package at.usmile.panshot.recognition;
+package at.usmile.panshot.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +46,7 @@ public class PCAUtil {
 				return _t.grayFace;
 			}
 		});
-		Mat samplesMat = RecUtil.transformImagesToFeatureMatrix(samplesList);
+		Mat samplesMat = RecognitionUtil.transformImagesToFeatureMatrix(samplesList);
 		// // DEBUG
 		// try {
 		// MediaSaveUtil.saveMatToJpgFile(new
@@ -105,7 +105,7 @@ public class PCAUtil {
 				return _t.grayFace;
 			}
 		});
-		Mat samplesMat = RecUtil.transformImagesToFeatureMatrix(samplesList);
+		Mat samplesMat = RecognitionUtil.transformImagesToFeatureMatrix(samplesList);
 		// project data into pc space
 		Mat result = new Mat();
 		Core.PCAProject(samplesMat, _mean, _eigenvectors, result);
