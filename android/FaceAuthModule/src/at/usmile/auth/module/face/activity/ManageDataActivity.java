@@ -147,13 +147,14 @@ public class ManageDataActivity extends Activity {
 
 	public void openFileBrowserToManageData() throws NotFoundException, IOException {
 		String packagename = getString(R.string.filemanager_package_name);
-		// install OI FM
 		if (!PackageUtil.isPackageInstalled(this, packagename)) {
+			// install OI FM
 			PackageUtil.installPackage(this, packagename);
+		} else {
+			// open OI FM
+			PackageUtil.openFolderInFileBrowser(this,
+					DataUtil.getMediaStorageDirectory(this.getResources().getString(R.string.app_media_directory_name))
+							.getAbsolutePath());
 		}
-		// open OI FM
-		PackageUtil.openFolderInFileBrowser(this,
-				DataUtil.getMediaStorageDirectory(this.getResources().getString(R.string.app_media_directory_name))
-						.getAbsolutePath());
 	}
 }
