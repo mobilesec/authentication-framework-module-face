@@ -1,6 +1,5 @@
 package at.usmile.auth.module.face.activity;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -21,6 +20,7 @@ import android.widget.Toast;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.User;
 import at.usmile.panshot.nu.FaceModuleUtil;
+import at.usmile.panshot.nu.PackageUtil;
 import at.usmile.panshot.util.MediaSaveUtil;
 
 /**
@@ -50,15 +50,9 @@ public class ManageDataActivity extends Activity {
 				Log.d(TAG, "buttonManageDataWithFSM.setOnClickListener()");
 				// open FM on correct location
 				try {
-					File mediaDir = MediaSaveUtil.getMediaStorageDirectory(getResources().getString(
-							R.string.app_media_directory_name));
-
-					// Intent intent = new Intent();
-					// intent.setAction(Intent.ACTION_GET_CONTENT);
-					// intent.setType("file/*");
-					// startActivity(intent);
-
-					Toast.makeText(ManageDataActivity.this, "not implemented yet.", Toast.LENGTH_LONG).show();
+					// Toast.makeText(ManageDataActivity.this,
+					// "not implemented yet.", Toast.LENGTH_LONG).show();
+					openFileBrowserToManageData();
 
 				} catch (NotFoundException e) {
 					Toast.makeText(ManageDataActivity.this, getResources().getText(R.string.error) + ": " + e.toString(),
@@ -130,8 +124,7 @@ public class ManageDataActivity extends Activity {
 			buttonDeleteIdentity.setEnabled(false);
 			spinnerIdentity.setEnabled(false);
 		} else {
-			// buttonDeleteIdentity.setEnabled(true);
-			buttonDeleteIdentity.setEnabled(false);
+			buttonDeleteIdentity.setEnabled(true);
 			spinnerIdentity.setEnabled(true);
 
 			spinnerAdapterUsers.clear();
@@ -140,6 +133,11 @@ public class ManageDataActivity extends Activity {
 			}
 			spinnerAdapterUsers.notifyDataSetChanged();
 		}
+		// deactivate UI for now
+		findViewById(R.id.textview_detele_user).setVisibility(View.INVISIBLE);
+		buttonDeleteIdentity.setEnabled(false);
+		buttonDeleteIdentity.setVisibility(View.INVISIBLE);
+		spinnerIdentity.setVisibility(View.INVISIBLE);
 	}
 
 	@Override
@@ -147,4 +145,15 @@ public class ManageDataActivity extends Activity {
 		super.onResume();
 	}
 
+	public void openFileBrowserToManageData() throws NotFoundException, IOException {
+		String packagename = getString(R.string.filemanager_package_name);
+		// install OI FM
+		if (!PackageUtil.isPackageInstalled(this, packagename)) {
+			PackageUtil.installPackage(this, packagename);
+		}
+		// open OI FM
+		PackageUtil.openFolderInFileBrowser(this,
+				MediaSaveUtil.getMediaStorageDirectory(this.getResources().getString(R.string.app_media_directory_name))
+						.getAbsolutePath());
+	}
 }

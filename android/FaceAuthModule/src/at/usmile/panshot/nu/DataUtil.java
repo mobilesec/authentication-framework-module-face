@@ -190,7 +190,7 @@ public class DataUtil {
 			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(_context, _context.getResources().getString(R.string.could_not_save_metadata_to_file, filename),
+			Toast.makeText(_context, _context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filename),
 					Toast.LENGTH_LONG).show();
 		}
 		// acceleration and gyroscope sensor series - separate files
@@ -204,7 +204,7 @@ public class DataUtil {
 			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filenameAngle + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(_context, _context.getResources().getString(R.string.could_not_save_metadata_to_file, filenameAngle),
+			Toast.makeText(_context, _context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAngle),
 					Toast.LENGTH_LONG).show();
 			return;
 		}
@@ -218,7 +218,7 @@ public class DataUtil {
 		} catch (IOException e) {
 			e.printStackTrace();
 			Toast.makeText(_context,
-					_context.getResources().getString(R.string.could_not_save_metadata_to_file, filenameAcceleration),
+					_context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAcceleration),
 					Toast.LENGTH_LONG).show();
 			return;
 		}
@@ -234,7 +234,7 @@ public class DataUtil {
 			MediaSaveUtil.saveTextToFile(textfileSb.toString(), panshotDir, filename + csvFileExtension);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(_context, _context.getResources().getString(R.string.could_not_save_metadata_to_file, filename),
+			Toast.makeText(_context, _context.getResources().getString(R.string.error_could_not_save_metadata_to_file, filename),
 					Toast.LENGTH_LONG).show();
 			return;
 		}

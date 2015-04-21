@@ -1003,7 +1003,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
-						getActivity().getResources().getString(R.string.could_not_save_metadata_to_file, filename),
+						getActivity().getResources().getString(R.string.error_could_not_save_metadata_to_file, filename),
 						Toast.LENGTH_LONG).show();
 			}
 			// acceleration and gyroscope sensor series - separate files
@@ -1018,7 +1018,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
-						getActivity().getResources().getString(R.string.could_not_save_metadata_to_file, filenameAngle),
+						getActivity().getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAngle),
 						Toast.LENGTH_LONG).show();
 				return;
 			}
@@ -1032,7 +1032,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
-						getActivity().getResources().getString(R.string.could_not_save_metadata_to_file, filenameAcceleration),
+						getActivity().getResources().getString(R.string.error_could_not_save_metadata_to_file, filenameAcceleration),
 						Toast.LENGTH_LONG).show();
 				return;
 			}
@@ -1049,7 +1049,7 @@ public class OldMainActivity extends FragmentActivity implements ActionBar.TabLi
 			} catch (IOException e) {
 				e.printStackTrace();
 				Toast.makeText(getActivity(),
-						getActivity().getResources().getString(R.string.could_not_save_metadata_to_file, filename),
+						getActivity().getResources().getString(R.string.error_could_not_save_metadata_to_file, filename),
 						Toast.LENGTH_LONG).show();
 				return;
 			}

@@ -23,7 +23,7 @@
     <string name="frontalonly_image_saved_successfully">Image saved successfully for user %1$s.</string>
     <string name="image_could_not_be_saved">A panshot image could not be saved (see log).</string>
     <string name="no_user_selected">No user selected - please select user first.</string>
-    <string name="could_not_save_metadata_to_file">Error saving data to csv file (%1$s), aborting.</string>
+    <string name="error_could_not_save_metadata_to_file">Error saving data to csv file (%1$s), aborting.</string>
     <string name="how_to_record_hint_panshot">Press vol up or vol down to start/stop recording panshots. After starting the panshot, try to not rotate your head, only rotate the phone (look straight) and do a full 180 deg rotation of the phone around your head in about 4 seconds. You can review past panshots in DCIM/PanshotRecorder/.</string>
     <string name="how_to_record_hint_frontal">Press vol up or vol down to take a picture. You can review past pictures in DCIM/PanshotRecorder/.</string>
     <string name="current_user">Current user: %1$s</string>
@@ -75,6 +75,10 @@
     <string name="textview_training_ongoing">Training ongoing</string>
     <string name="info_called_from_framework">Face authentication was initiated by "Authentication Framework"</string>
     <string name="manage_data_using_fsm">Manage data using file system manager</string>
-    <string name="manage_data_with_fsm_notice">ALPHA STATE: manage face authentication data via file system manager!</string>
+    <string name="manage_data_with_fsm_notice">You can manage face authentication data via a file system manager. If you delete training data you will have to record new one later, if you delete trained classifiers you will have to retrain them later.</string>
+    <string name="install_application_title">Install Application</string>
+    <string name="install_application_message">%1$s is not installed, install it?</string>
+    <string name="market_not_installed">Google Play is not installed, cannot download and install other apps.</string>
+    <string name="filemanager_package_name">org.openintents.filemanager</string>    
     
 </resources>
