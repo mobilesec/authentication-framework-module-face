@@ -16,8 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
-import at.usmile.auth.module.face.R;
 import at.usmile.functional.FunApply;
 import at.usmile.functional.FunUtil;
 import at.usmile.panshot.PanshotImage;
@@ -48,6 +46,19 @@ public class RecognitionModule implements Serializable {
 	 */
 	private Map<Integer, SvmClassifier> mSvmClassifiers = new HashMap<Integer, SvmClassifier>();
 	private Map<Integer, KnnClassifier> mKnnClassifiers = new HashMap<Integer, KnnClassifier>();
+
+	/**
+	 * training date splitted by classifier. gets filled after calling
+	 * {@link RecognitionModule#loadTrainingData(Context, float, int)}
+	 */
+	private Map<Integer, TrainingData> mTrainingDataPerClassifier = null;
+	/**
+	 * amount of images per user and perspective. used to recognize if we have
+	 * too less training data for at least one user and positiorn to abort
+	 * training. gets filled after calling
+	 * {@link RecognitionModule#loadTrainingData(Context, float, int)}
+	 */
+	private Map<GenericTuple2<String, Integer>, Integer> mImageAmount = null;
 
 	// ================================================================================================================
 	// METHODS
@@ -81,6 +92,7 @@ public class RecognitionModule implements Serializable {
 			int classifierIndex = getClassifierIndexForAngle(image.angleValues[image.rec.angleIndex], _classifierSeparationAngle);
 			if (!mKnnClassifiers.containsKey(classifierIndex)) {
 				// skip, we cannot classify images we have no classifier for
+				Log.d(TAG, "skipping face for clas. index " + classifierIndex + ": " + image.toString());
 				continue;
 			}
 			// classify and remember results
@@ -160,16 +172,13 @@ public class RecognitionModule implements Serializable {
 	}
 
 	/**
-	 * Load training data, do energy normalization, split images by angle,
-	 * generate classifiers and train them.
+	 * Loads and caches training data. Necessary before calling training.
 	 * 
 	 * @param _context
 	 * @param _angleDiffOfPhotos
 	 * @param _minAmountImagesPerSubjectAndClassifier
 	 */
-	public void train(final Context _context, float _angleDiffOfPhotos, int _minAmountImagesPerSubjectAndClassifier) {
-		// TODO externalize context stuff
-
+	public void loadTrainingData(final Context _context, float _angleDiffOfPhotos, int _minAmountImagesPerSubjectAndClassifier) {
 		// load training data
 		Log.d(TAG, "loading training panshot images...");
 		List<PanshotImage> trainingPanshotImages = DataUtil.loadTrainingData(_context);
@@ -211,16 +220,49 @@ public class RecognitionModule implements Serializable {
 			}
 			imageAmount.put(subjectPerspectiveKey, imageAmount.get(subjectPerspectiveKey) + 1);
 		}
-		for (GenericTuple2<String, Integer> key : imageAmount.keySet()) {
-			int amount = imageAmount.get(key);
-			if (amount < _minAmountImagesPerSubjectAndClassifier) {
-				Toast.makeText(
-						_context,
-						_context.getResources().getString(R.string.too_less_training_data, key.value1, "" + amount,
-								"" + key.value2, "" + _minAmountImagesPerSubjectAndClassifier), Toast.LENGTH_LONG).show();
-				return;
+		mTrainingDataPerClassifier = trainingdataPerClassifier;
+		mImageAmount = imageAmount;
+	}
+
+	/**
+	 * Checks for all users having enough training data for all perspectives.
+	 * 
+	 * @param _context
+	 * @param _minAmountImagesPerSubjectAndClassifier
+	 * @return a tuple: value1: boolean stating if enough training data is
+	 *         contained. value2: if not enough training data is contained:
+	 *         summary of date of which we have too less as map of users,
+	 *         perspectives and the correlating current amount of images.
+	 */
+	public GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> isEnoughTrainingDataPerPerspective(
+			Context _context, int _minAmountImagesPerSubjectAndClassifier) {
+		Map<GenericTuple2<String, Integer>, Integer> tooLessTrainingData = new HashMap<GenericTuple2<String, Integer>, Integer>();
+		for (GenericTuple2<String, Integer> key : mImageAmount.keySet()) {
+			int value = mImageAmount.get(key);
+			if (value < _minAmountImagesPerSubjectAndClassifier) {
+				tooLessTrainingData.put(key, value);
 			}
 		}
+		return new GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>>(tooLessTrainingData.size() == 0,
+				tooLessTrainingData);
+	}
+
+	/**
+	 * Training: do energy normalization, split images by angle, generate
+	 * classifiers and train them. Before training: load training data
+	 * {@link RecognitionModule#loadTrainingData(Context, float, int)} and
+	 * ensure that we have enough data using
+	 * {@link RecognitionModule#isEnoughTrainingDataPerPerspective(Context, int)}
+	 * .
+	 * 
+	 * @param _context
+	 * @param _angleDiffOfPhotos
+	 * @param _minAmountImagesPerSubjectAndClassifier
+	 */
+	public void train(final Context _context, float _angleDiffOfPhotos, int _minAmountImagesPerSubjectAndClassifier) {
+		// TODO externalize context stuff
+
+		Map<Integer, TrainingData> trainingdataPerClassifier = mTrainingDataPerClassifier;
 
 		// RESIZE images as KNN, SVM etc need images that are of
 		// same size
@@ -278,7 +320,7 @@ public class RecognitionModule implements Serializable {
 
 	@Override
 	public String toString() {
-		return "RecognitionModule [mSvmClassifiers=" + mSvmClassifiers + "]";
+		return "RecognitionModule [mSvmClassifiers=" + mSvmClassifiers + ", mKnnClassifiers=" + mKnnClassifiers + "]";
 	}
 
 	private void writeObject(ObjectOutputStream out) throws IOException {

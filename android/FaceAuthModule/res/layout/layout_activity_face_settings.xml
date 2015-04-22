@@ -130,6 +130,15 @@
             android:layout_below="@+id/textViewFaceSize"
             android:ems="100"
             android:inputType="number" />
+
+        <Switch
+            android:id="@+id/switchUseFrontalOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/editTextFaceSize"
+            android:text="@string/use_fronal_only" />
+        
     </RelativeLayout>
 
 </ScrollView>

@@ -870,6 +870,10 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 								return _t.grayFace != null;
 							}
 						});
+						if (imagesWithFaces.size() == 0) {
+							Toast.makeText(this, R.string.no_faces_detected_please_try_again, Toast.LENGTH_SHORT).show();
+							break;
+						}
 
 						// normalise energy of all images
 						if (SharedPrefs.useImageEnergyNormlization(FaceDetectionActivity.this)) {

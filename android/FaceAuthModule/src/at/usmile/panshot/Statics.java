@@ -29,5 +29,6 @@ public class Statics {
 	public static final String TRAINING_SERVICE_STATUS_FINISHED = "finished";
 	public static final String TRAINING_SERVICE_STATUS_FAILED = "failed";
 	public static final String TRAINING_SERVICE_STATUS_ERROR_STRING = "error-string";
-
+	public static final String TRAINING_SERVICE_STATUS_TOO_LESS_DATA = "too-less-data";
+	public static final String TRAINING_SERVICE_STATUS_TOO_LESS_DATA_DETAILS = "details";
 }

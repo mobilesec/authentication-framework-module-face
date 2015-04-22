@@ -2,6 +2,7 @@ package at.usmile.auth.module.face.activity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.opencv.android.InstallCallbackInterface;
 import org.opencv.android.LoaderCallbackInterface;
@@ -30,6 +31,7 @@ import at.usmile.panshot.SharedPrefs;
 import at.usmile.panshot.Statics;
 import at.usmile.panshot.recognition.RecognitionModule;
 import at.usmile.panshot.util.DataUtil;
+import at.usmile.tuple.GenericTuple2;
 
 /**
  * Entry point if user opens app to train or change settings (= if not called by
@@ -142,29 +144,46 @@ public class MainActivity extends Activity {
 
 								setTrainingOngoingUIEnabled(false);
 
-								// train and persist recognitionmodule
-								RecognitionModule recognitionModule = new RecognitionModule();
+								// load training data
 								Toast.makeText(MainActivity.this, "Training started, may take a while...", Toast.LENGTH_LONG)
 										.show();
-								recognitionModule.train(MainActivity.this,
-										SharedPrefs.getAngleBetweenClassifiers(MainActivity.this),
-										SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(MainActivity.this));
-								try {
-									File directory = DataUtil.getMediaStorageDirectory(getResources().getString(
-											R.string.app_classifier_directory_name));
-									DataUtil.serializeRecognitionModule(directory, recognitionModule);
-								} catch (NotFoundException e2) {
-									e2.printStackTrace();
-									Toast.makeText(MainActivity.this, "Storing failed: NotFoundException", Toast.LENGTH_LONG)
-											.show();
-								} catch (IOException e2) {
-									e2.printStackTrace();
-									Toast.makeText(MainActivity.this, "Storing failed: IOException", Toast.LENGTH_LONG).show();
+								float angleBetweenClassifiers = SharedPrefs.getAngleBetweenClassifiers(MainActivity.this);
+								int minAmountOfTrainingImagesPerSubjectAntClassifier = SharedPrefs
+										.getMinAmountOfTrainingImagesPerSubjectAntClassifier(MainActivity.this);
+								RecognitionModule recognitionModule = new RecognitionModule();
+								recognitionModule.loadTrainingData(MainActivity.this, angleBetweenClassifiers,
+										minAmountOfTrainingImagesPerSubjectAntClassifier);
+								GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> isEnoughTrainingDataPerPerspective = recognitionModule
+										.isEnoughTrainingDataPerPerspective(MainActivity.this,
+												minAmountOfTrainingImagesPerSubjectAntClassifier);
+
+								// do not have enough training data, notify and
+								// abort
+								if (!isEnoughTrainingDataPerPerspective.value1) {
+									showTooLessTrainingData(isEnoughTrainingDataPerPerspective,
+											minAmountOfTrainingImagesPerSubjectAntClassifier);
 								}
-								Toast.makeText(MainActivity.this, "Training finished.", Toast.LENGTH_LONG).show();
 
+								// train and persist recognitionmodule
+								else {
+									recognitionModule.train(MainActivity.this, angleBetweenClassifiers,
+											minAmountOfTrainingImagesPerSubjectAntClassifier);
+									try {
+										File directory = DataUtil.getMediaStorageDirectory(getResources().getString(
+												R.string.app_classifier_directory_name));
+										DataUtil.serializeRecognitionModule(directory, recognitionModule);
+									} catch (NotFoundException e2) {
+										e2.printStackTrace();
+										Toast.makeText(MainActivity.this, "Storing failed: NotFoundException", Toast.LENGTH_LONG)
+												.show();
+									} catch (IOException e2) {
+										e2.printStackTrace();
+										Toast.makeText(MainActivity.this, "Storing failed: IOException", Toast.LENGTH_LONG)
+												.show();
+									}
+									Toast.makeText(MainActivity.this, "Training finished.", Toast.LENGTH_LONG).show();
+								}
 								setTrainingOngoingUIEnabled(true);
-
 								break;
 
 							case DialogInterface.BUTTON_NEGATIVE:
@@ -260,6 +279,14 @@ public class MainActivity extends Activity {
 											}
 										}).show();
 					}
+
+					else if (status.equals(Statics.TRAINING_SERVICE_STATUS_TOO_LESS_DATA)) {
+						@SuppressWarnings("unchecked")
+						GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> isEnoughTrainingDataPerPerspective = ((GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>>) extras
+								.getSerializable(Statics.TRAINING_SERVICE_STATUS_TOO_LESS_DATA_DETAILS));
+						showTooLessTrainingData(isEnoughTrainingDataPerPerspective,
+								SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(MainActivity.this));
+					}
 				}
 			}
 		};
@@ -311,5 +338,41 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+	}
+
+	public void showTooLessTrainingData(
+			GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> _isEnoughTrainingDataPerPerspective,
+			int _minAmountImagesPerSubjectAndClassifier) {
+
+		// complete error message
+		StringBuilder sbUsers = new StringBuilder("( ");
+		StringBuilder sbPerspectives = new StringBuilder("( ");
+		StringBuilder sbAmounts = new StringBuilder("( ");
+		for (GenericTuple2<String, Integer> key : _isEnoughTrainingDataPerPerspective.value2.keySet()) {
+			sbUsers.append(key.value1 + " ");
+			sbPerspectives.append(key.value2 + " ");
+			sbAmounts.append(_isEnoughTrainingDataPerPerspective.value2.get(key) + " ");
+		}
+		sbUsers.append(")");
+		sbPerspectives.append(")");
+		sbAmounts.append(")");
+		final String msg = MainActivity.this.getResources().getString(R.string.too_less_training_data,
+				"" + _minAmountImagesPerSubjectAndClassifier, "" + sbUsers.toString(), "" + sbAmounts.toString(),
+				"" + sbPerspectives.toString());
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				new AlertDialog.Builder(MainActivity.this)
+						.setTitle(MainActivity.this.getResources().getString(R.string.error))
+						.setMessage(msg)
+						.setPositiveButton(MainActivity.this.getResources().getString(R.string.ok),
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog, int whichButton) {
+									}
+								}).show();
+			}
+		});
+
+		// replace by something simpler?
 	}
 }

@@ -12,6 +12,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.SharedPrefs;
 
@@ -167,6 +168,18 @@ public class SettingsActivity extends Activity {
 			public void onCheckedChanged(CompoundButton _buttonView, boolean _isChecked) {
 				getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
 						.putBoolean(SharedPrefs.USE_PCA, _isChecked).commit();
+			}
+		});
+
+		// USE FRONTAL ONLY
+		Switch switchUseFrontalOnly = (Switch) findViewById(R.id.switchUseFrontalOnly);
+		switchUseFrontalOnly.setChecked(SharedPrefs.isFrontalOnly(this));
+		switchUseFrontalOnly.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(CompoundButton _buttonView, boolean _isChecked) {
+				Log.d(TAG, "switchUseFrontalOnly#onCheckedChanged(): " + _isChecked);
+				getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+						.putBoolean(SharedPrefs.USE_FRONTAL_ONLY, _isChecked).commit();
 			}
 		});
 	}

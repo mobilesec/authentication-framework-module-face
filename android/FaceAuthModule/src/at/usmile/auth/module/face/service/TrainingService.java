@@ -2,6 +2,7 @@ package at.usmile.auth.module.face.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import android.app.IntentService;
 import android.content.Context;
@@ -15,6 +16,7 @@ import at.usmile.panshot.Statics;
 import at.usmile.panshot.recognition.RecognitionModule;
 import at.usmile.panshot.util.DataUtil;
 import at.usmile.panshot.util.ServiceUtil;
+import at.usmile.tuple.GenericTuple2;
 
 /**
  * Service that trains classifiers needed for face recognition, as training
@@ -45,25 +47,41 @@ public class TrainingService extends IntentService {
 		// prepare back-report intent
 		Intent localIntent = new Intent(Statics.TRAINING_SERVICE_BROADCAST_ACTION);
 
-		// train and persist recognitionmodule
+		// load training data
+		float angleBetweenClassifiers = SharedPrefs.getAngleBetweenClassifiers(this);
+		int minAmountOfTrainingImagesPerSubjectAntClassifier = SharedPrefs
+				.getMinAmountOfTrainingImagesPerSubjectAntClassifier(this);
 		RecognitionModule recognitionModule = new RecognitionModule();
-		recognitionModule.train(this, SharedPrefs.getAngleBetweenClassifiers(this),
-				SharedPrefs.getMinAmountOfTrainingImagesPerSubjectAntClassifier(this));
-		try {
-			File directory = DataUtil.getMediaStorageDirectory(getResources().getString(R.string.app_classifier_directory_name));
-			DataUtil.serializeRecognitionModule(directory, recognitionModule);
+		recognitionModule.loadTrainingData(this, angleBetweenClassifiers, minAmountOfTrainingImagesPerSubjectAntClassifier);
 
-			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FINISHED);
+		// do not have enough training data, notify and abort
+		GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> isEnoughTrainingDataPerPerspective = recognitionModule
+				.isEnoughTrainingDataPerPerspective(this, minAmountOfTrainingImagesPerSubjectAntClassifier);
+		if (!isEnoughTrainingDataPerPerspective.value1) {
+			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_TOO_LESS_DATA);
+			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS_TOO_LESS_DATA_DETAILS, isEnoughTrainingDataPerPerspective);
+		}
 
-		} catch (NotFoundException e2) {
-			e2.printStackTrace();
-			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FAILED);
-			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS_ERROR_STRING, e2.toString());
+		// train and persist recognitionmodule
+		else {
+			recognitionModule.train(this, angleBetweenClassifiers, minAmountOfTrainingImagesPerSubjectAntClassifier);
+			try {
+				File directory = DataUtil.getMediaStorageDirectory(getResources().getString(
+						R.string.app_classifier_directory_name));
+				DataUtil.serializeRecognitionModule(directory, recognitionModule);
 
-		} catch (IOException e2) {
-			e2.printStackTrace();
-			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FAILED);
-			localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS_ERROR_STRING, e2.toString());
+				localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FINISHED);
+
+			} catch (NotFoundException e2) {
+				e2.printStackTrace();
+				localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FAILED);
+				localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS_ERROR_STRING, e2.toString());
+
+			} catch (IOException e2) {
+				e2.printStackTrace();
+				localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS, Statics.TRAINING_SERVICE_STATUS_FAILED);
+				localIntent.putExtra(Statics.TRAINING_SERVICE_STATUS_ERROR_STRING, e2.toString());
+			}
 		}
 
 		// Broadcasts the Intent to receivers in this app

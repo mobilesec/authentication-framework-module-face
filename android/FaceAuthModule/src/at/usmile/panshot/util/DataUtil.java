@@ -62,6 +62,8 @@ import au.com.bytecode.opencsv.CSVReader;
 public class DataUtil {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DataUtil.class);
 
+	private static final String TAG = DataUtil.class.getSimpleName();
+
 	protected static FileFilter PANSHOT_USER_FOLDER_FILE_FILTER = new FileFilter() {
 		@Override
 		public boolean accept(File file) {
@@ -405,10 +407,13 @@ public class DataUtil {
 					"recognition_module.ser"))));
 			r = (RecognitionModule) objectInputStream.readObject();
 
-			// load native data
-			for (SvmClassifier c : r.getSvmClassifiers().values()) {
-				c.loadNativeData(_directory);
+			// load ivm native data
+			if (r.getSvmClassifiers() != null) {
+				for (SvmClassifier c : r.getSvmClassifiers().values()) {
+					c.loadNativeData(_directory);
+				}
 			}
+			Log.d(TAG, "deserialized recognitionmodule: " + r);
 
 		} finally {
 			if (objectInputStream != null) {

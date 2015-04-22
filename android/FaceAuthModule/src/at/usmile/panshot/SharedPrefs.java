@@ -80,7 +80,7 @@ public abstract class SharedPrefs {
 	 * if only frontal images are used. if yes: recording stops immediately
 	 * after taking the first pic, so user does not have to press twice.
 	 */
-	private static final String USE_FRONTAL_ONLY = SHARED_PREFENCES_ID + ".use_frontal_only"; // boolean
+	public static final String USE_FRONTAL_ONLY = SHARED_PREFENCES_ID + ".use_frontal_only"; // boolean
 																								// true
 
 	// ==============================================================================================================
@@ -141,7 +141,7 @@ public abstract class SharedPrefs {
 
 	public static float getAngleBetweenClassifiers(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getFloat(
-				SharedPrefs.ANGLE_DIFF_OF_PHOTOS, (float) (22.5f / 2f / 180f * Math.PI));
+				SharedPrefs.ANGLE_DIFF_OF_PHOTOS, (float) (22.5f / 180f * Math.PI));
 	}
 
 	public static float getFrontalMaxAngle(Context _context) {
@@ -151,6 +151,6 @@ public abstract class SharedPrefs {
 
 	public static boolean isFrontalOnly(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getBoolean(
-				SharedPrefs.USE_FRONTAL_ONLY, true);
+				SharedPrefs.USE_FRONTAL_ONLY, false);
 	}
 }
