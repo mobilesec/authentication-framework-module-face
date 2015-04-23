@@ -367,10 +367,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 					e1.printStackTrace();
 					sendConfidenceToAuthFrameworkInvalid();
 				}
-
-				// inform user that it's the authentication framework calling
-				// for face auth.
-				Toast.makeText(this, getResources().getText(R.string.info_called_from_framework), Toast.LENGTH_SHORT);
 			}
 
 			// RECORD NEW DATA
@@ -491,6 +487,20 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		SensorComponent.instance().addObserver(mPhotoGyroListener);
 
 		updateUiFromCurrentUser();
+
+		switch (mFaceDetectionPurpose) {
+			case AUTHENTICATION:
+				// inform user that it's the authentication framework calling
+				// for face auth.
+				Toast.makeText(this, getResources().getText(R.string.info_called_from_framework), Toast.LENGTH_LONG).show();
+				break;
+			case RECOGNITION_TEST:
+				break;
+			case RECORD_DATA:
+				break;
+			default:
+				break;
+		}
 	}
 
 	@Override
@@ -799,27 +809,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		return faces.toArray();
 	}
 
-	// TODO use those somewhere...
-	private void setMinFaceSize(float faceSize) {
-		mRelativeFaceSize = faceSize;
-		mAbsoluteFaceSize = 0;
-	}
-
-	// TODO use those somewhere...
-	private void setDetectorType(int type) {
-		if (mDetectorType != type) {
-			mDetectorType = type;
-
-			if (type == NATIVE_DETECTOR) {
-				Log.i(TAG, "Detection Based Tracker enabled");
-				mNativeDetector_LBPCascadeFrontalface.start();
-			} else {
-				Log.i(TAG, "Cascade detector enabled");
-				mNativeDetector_LBPCascadeFrontalface.stop();
-			}
-		}
-	}
-
 	private void toggleRecording() {
 		if (!mIsTakingPictures) {
 			startTakingPictures();
@@ -924,7 +913,8 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 										GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
 												.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
 														SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
-														SharedPrefs.getAngleBetweenClassifiers(this));
+														SharedPrefs.getAngleBetweenClassifiers(this),
+														SharedPrefs.getKnnDistanceMetricLNormPower(FaceDetectionActivity.this));
 										sendConfidenceToAuthFrameworkOk(classificationResult.value2.floatValue());
 										break;
 									}
@@ -947,9 +937,10 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 									switch (SharedPrefs.getRecognitionType(FaceDetectionActivity.this)) {
 										case KNN: {
 											GenericTuple3<User, Integer, Map<User, Integer>> classificationResult = mRecognitionModule
-													.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null,
-															SharedPrefs.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this),
-															SharedPrefs.getAngleBetweenClassifiers(this));
+													.classifyKnn(imagesWithFaces, SharedPrefs.getKnnK(this), null, SharedPrefs
+															.usePca(this), SharedPrefs.getAmountOfPcaFeatures(this), SharedPrefs
+															.getAngleBetweenClassifiers(this), SharedPrefs
+															.getKnnDistanceMetricLNormPower(FaceDetectionActivity.this));
 											Toast.makeText(
 													this,
 													getResources().getString(R.string.most_likely_user_knn,

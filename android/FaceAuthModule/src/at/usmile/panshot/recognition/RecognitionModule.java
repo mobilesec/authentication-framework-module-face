@@ -84,7 +84,8 @@ public class RecognitionModule implements Serializable {
 	}
 
 	public GenericTuple3<User, Integer, Map<User, Integer>> classifyKnn(List<PanshotImage> _images, int _k,
-			DistanceMetric _distanceMetric, boolean _usePca, int _pcaAmountOfFeatures, float _classifierSeparationAngle) {
+			DistanceMetric _distanceMetric, boolean _usePca, int _pcaAmountOfFeatures, float _classifierSeparationAngle,
+			final float _knnDistanceMetricLNormPower) {
 		// classify each image, combine votings
 		Map<User, Integer> votings = new HashMap<User, Integer>();
 		GenericTuple2<User, Integer> mostVotedUser = null;
@@ -97,17 +98,12 @@ public class RecognitionModule implements Serializable {
 			}
 			// classify and remember results
 			KnnClassifier classifier = mKnnClassifiers.get(classifierIndex);
-			GenericTuple2<User, Map<User, Integer>> res = classifier.classify(image, _k,
-			// TODO put that to settings
-					new DistanceMetric() {
-						@Override
-						public double distance(double _sample1Feat, double _sample2Feat) {
-							return Math.pow(_sample1Feat - _sample2Feat, 2);
-							// = euclidean without sqrt. alternative:
-							// manhatten distance
-							// Math.abs(_sample1Feat - _sample2Feat);
-						}
-					}, _usePca, _pcaAmountOfFeatures);
+			GenericTuple2<User, Map<User, Integer>> res = classifier.classify(image, _k, new DistanceMetric() {
+				@Override
+				public double distance(double _sample1Feat, double _sample2Feat) {
+					return Math.pow(_sample1Feat - _sample2Feat, _knnDistanceMetricLNormPower);
+				}
+			}, _usePca, _pcaAmountOfFeatures);
 			for (User u : res.value2.keySet()) {
 				if (!votings.containsKey(u)) {
 					votings.put(u, res.value2.get(u));
@@ -179,8 +175,8 @@ public class RecognitionModule implements Serializable {
 	 * @param _minAmountImagesPerSubjectAndClassifier
 	 * @param _useFronalOnly
 	 */
-	public void loadTrainingData(final Context _context, float _angleBetweenPerspectives, int _minAmountImagesPerSubjectAndClassifier,
-			boolean _useFronalOnly) {
+	public void loadTrainingData(final Context _context, float _angleBetweenPerspectives,
+			int _minAmountImagesPerSubjectAndClassifier, boolean _useFronalOnly) {
 		// load training data
 		Log.d(TAG, "loading training panshot images...");
 		List<PanshotImage> trainingPanshotImages = DataUtil.loadTrainingData(_context, _useFronalOnly, _angleBetweenPerspectives);

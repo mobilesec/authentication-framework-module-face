@@ -47,6 +47,8 @@ public abstract class SharedPrefs {
 			+ ".energy_normalization_kernel_subsampling_factor";
 	/** the K parameter of the KNN classifier. */
 	public static final String KNN_K = SHARED_PREFENCES_ID + ".knn_k";
+	/** the L^n-norm power n that is used in the distance metric of KNN */
+	public static final String KNN_DISTANCE_METRIC_LNORM_POWER = SHARED_PREFENCES_ID + ".knn_distance_metric_lnorm_power";
 	/**
 	 * if PCA should be applied to transform and reduce the amount of features
 	 * before training / classification.
@@ -90,8 +92,7 @@ public abstract class SharedPrefs {
 	 * if only frontal images are used. if yes: recording stops immediately
 	 * after taking the first pic, so user does not have to press twice.
 	 */
-	public static final String USE_FRONTAL_ONLY = SHARED_PREFENCES_ID + ".use_frontal_only"; // boolean
-																								// true
+	public static final String USE_FRONTAL_ONLY = SHARED_PREFENCES_ID + ".use_frontal_only";
 
 	// ==============================================================================================================
 	// READ ACCESS
@@ -140,6 +141,11 @@ public abstract class SharedPrefs {
 				SharedPrefs.USE_CLASSIFIER_TYPE_KNN, false);
 	}
 
+	public static float getKnnDistanceMetricLNormPower(Context _context) {
+		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getFloat(
+				SharedPrefs.KNN_DISTANCE_METRIC_LNORM_POWER, 2.0f);
+	}
+
 	public static int getKnnK(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getInt(SharedPrefs.KNN_K, 3);
 	}
@@ -163,4 +169,5 @@ public abstract class SharedPrefs {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getBoolean(
 				SharedPrefs.USE_FRONTAL_ONLY, true);
 	}
+
 }

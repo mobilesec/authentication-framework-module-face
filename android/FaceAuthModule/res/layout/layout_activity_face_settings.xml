@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/textView4"
-            android:text="@string/face_data_settings"
+            android:text="@string/face_data_settings" 
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <View
@@ -44,8 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/sep1"
-            android:text="@string/face_size"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/face_size" />
 
         <EditText
             android:id="@+id/editTextFaceSize"
@@ -85,8 +84,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/sep2"
-            android:text="@string/classifier_type"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/classifier_type" />
 
         <RadioGroup
             android:id="@+id/radioGroupClassierType"
@@ -115,8 +113,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/radioGroupClassierType"
-            android:text="@string/knn_k"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/knn_k" />
 
         <EditText
             android:id="@+id/editTextKnnK"
@@ -129,12 +126,31 @@
             android:hint="@string/knn_k"
             android:inputType="number" />
 
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/editTextKnnK"
+            android:text="@string/knn_distance_metric_lnorm_power" />
+
+        <EditText
+            android:id="@+id/edittext_knn_distance_metric_lnorm_power"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/textView1"
+            android:ems="10"
+            android:hint="@string/knn_distance_metric_lnorm_power"
+            android:inputType="numberDecimal" />
+
         <CheckBox
             android:id="@+id/checkBoxUseImageEnergyNormalization"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/editTextKnnK"
-            android:layout_below="@+id/editTextKnnK"
+            android:layout_below="@+id/edittext_knn_distance_metric_lnorm_power"
             android:text="@string/use_image_energy_normalization" />
 
         <TextView
@@ -143,8 +159,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/checkBoxUseImageEnergyNormalization"
-            android:text="@string/image_energy_normalization_kernel_subsamling"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/image_energy_normalization_kernel_subsamling" />
 
         <EditText
             android:id="@+id/editTextImageEnergyNormalizationKernelSubsampling"
@@ -171,8 +186,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/checkBoxUsePca"
-            android:text="@string/pca_features"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:text="@string/pca_features" />
 
         <EditText
             android:id="@+id/editTextPcaFeatures"

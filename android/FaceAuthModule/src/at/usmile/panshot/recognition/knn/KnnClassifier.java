@@ -41,8 +41,6 @@ public class KnnClassifier implements FaceClassifier, Serializable {
 				throw new RuntimeException("Not all training images contain training data (user information).");
 			}
 		}
-		// mTrainingData = _trainingData;
-
 		// save data that we need later
 		mImages = _trainingData.images;
 		mPcaEigenvectors = _trainingData.pcaEigenvectors;

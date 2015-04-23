@@ -85,5 +85,7 @@
     <string name="face_data_settings">\nFace data settings</string>    
     <string name="face_recognition_settings">\nFace recognition setting</string>    
     <string name="really_change_settings">Really change settings? This will delete current classifier data.</string>    
+    <string name="knn_distance_metric_lnorm_power">KNN: power of the L^n-Norm distance metric</string>    
+    <string name="org_opencv_engine">org.opencv.engine</string>    
     
 </resources>

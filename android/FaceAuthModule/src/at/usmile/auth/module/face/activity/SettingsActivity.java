@@ -116,6 +116,35 @@ public class SettingsActivity extends Activity {
 			}
 		});
 
+		// KNN DISTANCE METRIC LNORM POWER
+		final EditText edittextKnnDistanceMetricLNormPower = (EditText) findViewById(R.id.edittext_knn_distance_metric_lnorm_power);
+		edittextKnnDistanceMetricLNormPower.setText("" + SharedPrefs.getKnnDistanceMetricLNormPower(this));
+		edittextKnnDistanceMetricLNormPower.setEnabled(SharedPrefs.useKnn(this));
+		edittextKnnDistanceMetricLNormPower.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void onTextChanged(CharSequence _s, int _start, int _before, int _count) {
+			}
+
+			@Override
+			public void beforeTextChanged(CharSequence _s, int _start, int _count, int _after) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable _s) {
+				try {
+					reallyChangeSettingsDialog(new Runnable() {
+						public void run() {
+							float val = Float.parseFloat(edittextKnnDistanceMetricLNormPower.getText().toString());
+							getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+									.putFloat(SharedPrefs.KNN_DISTANCE_METRIC_LNORM_POWER, val).commit();
+						}
+					});
+				} catch (NumberFormatException e) {
+				} catch (NullPointerException e) {
+				}
+			}
+		});
+
 		// RADIOGROUP CLASSIFIER TYPE
 		final RadioGroup rGroupClassifierType = (RadioGroup) findViewById(R.id.radioGroupClassierType);
 		final RadioButton radiobuttonKnn = (RadioButton) findViewById(R.id.radioKnn);
@@ -130,6 +159,7 @@ public class SettingsActivity extends Activity {
 						getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
 								.putBoolean(SharedPrefs.USE_CLASSIFIER_TYPE_KNN, checkedRadioButton == radiobuttonKnn).commit();
 						edittextKnnK.setEnabled(checkedRadioButton == radiobuttonKnn);
+						edittextKnnDistanceMetricLNormPower.setEnabled(checkedRadioButton == radiobuttonKnn);
 					}
 				});
 			}
@@ -246,7 +276,11 @@ public class SettingsActivity extends Activity {
 						DataUtil.deleteClassifiers(SettingsActivity.this);
 						mAskBeforeSettingsChange = false;
 						// change settings
-						_r.run();
+						try {
+							_r.run();
+						} catch (NumberFormatException e) {
+						} catch (NullPointerException e) {
+						}
 						break;
 
 					case DialogInterface.BUTTON_NEGATIVE:

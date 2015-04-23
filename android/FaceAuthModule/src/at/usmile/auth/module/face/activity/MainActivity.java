@@ -31,6 +31,7 @@ import at.usmile.panshot.SharedPrefs;
 import at.usmile.panshot.Statics;
 import at.usmile.panshot.recognition.RecognitionModule;
 import at.usmile.panshot.util.DataUtil;
+import at.usmile.panshot.util.PackageUtil;
 import at.usmile.tuple.GenericTuple2;
 
 /**
@@ -302,6 +303,11 @@ public class MainActivity extends Activity {
 
 		// update UI with current service state
 		setTrainingOngoingUIEnabled(!TrainingService.isServiceRunning(this));
+
+		// ensure opencv is installed
+		if (!PackageUtil.isPackageInstalled(this, getString(R.string.org_opencv_engine))) {
+			PackageUtil.installPackage(this, getString(R.string.org_opencv_engine));
+		}
 	}
 
 	/**
