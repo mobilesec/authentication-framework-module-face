@@ -9,16 +9,82 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".MainActivity$DummySectionFragment" >
 
-    <RelativeLayout
+   <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" >
-
-        <TextView
+       
+		<TextView
             android:id="@+id/textView4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
+            android:text="@string/changing_setting_requires_retraining"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+       
+		<TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textView4"
+            android:text="@string/face_data_settings"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+		
+		<View 
+           style="@style/Separator"
+           android:id="@+id/sep1"
+           android:layout_below="@+id/textView6" />
+       
+        
+        
+        <TextView
+            android:id="@+id/textViewFaceSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/sep1"
+            android:text="@string/face_size"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextFaceSize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textViewFaceSize"
+            android:ems="100"
+            android:hint="@string/face_size"
+            android:inputType="number" />
+
+        <CheckBox
+            android:id="@+id/switchUseFrontalOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/editTextFaceSize"
+            android:text="@string/use_fronal_only" />
+        
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/switchUseFrontalOnly" 
+            android:text="@string/face_recognition_settings"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+        <View 
+           style="@style/Separator"
+           android:id="@+id/sep2"
+           android:layout_below="@+id/textView7" />
+        
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/sep2" 
             android:text="@string/classifier_type"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -26,8 +92,14 @@
             android:id="@+id/radioGroupClassierType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/textView4"
-            android:layout_below="@+id/textView4" >
+            android:layout_alignParentLeft="true"
+            android:layout_below="@+id/textView5" >
+
+            <RadioButton
+                android:id="@+id/radioSvm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/radiobutton_svm" />
 
             <RadioButton
                 android:id="@+id/radioKnn"
@@ -35,12 +107,6 @@
                 android:layout_height="wrap_content"
                 android:checked="true"
                 android:text="@string/radiobutton_knn" />
-
-            <RadioButton
-                android:id="@+id/radioSvm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/radiobutton_svm" />
         </RadioGroup>
 
         <TextView
@@ -57,8 +123,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
             android:layout_below="@+id/textViewKnnK"
             android:ems="10"
+            android:hint="@string/knn_k"
             android:inputType="number" />
 
         <CheckBox
@@ -83,15 +151,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
+            android:layout_alignParentRight="true"
             android:layout_below="@+id/textViewUseImageEnergyNormalizationKernelSubsampling"
             android:ems="10"
+            android:hint="@string/image_energy_normalization_kernel_subsamling"
             android:inputType="numberDecimal" />
 
         <CheckBox
             android:id="@+id/checkBoxUsePca"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/editTextImageEnergyNormalizationKernelSubsampling"
+            android:layout_alignParentLeft="true"
             android:layout_below="@+id/editTextImageEnergyNormalizationKernelSubsampling"
             android:text="@string/use_pca" />
 
@@ -111,33 +181,13 @@
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/textViewPcaFeatures"
             android:ems="20"
+            android:hint="@string/pca_features"
             android:inputType="number" />
 
-        <TextView
-            android:id="@+id/textViewFaceSize"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/editTextPcaFeatures"
-            android:text="@string/face_size"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
 
-        <EditText
-            android:id="@+id/editTextFaceSize"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/textViewFaceSize"
-            android:ems="100"
-            android:inputType="number" />
+               
 
-        <Switch
-            android:id="@+id/switchUseFrontalOnly"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_below="@+id/editTextFaceSize"
-            android:text="@string/use_fronal_only" />
+
         
     </RelativeLayout>
 

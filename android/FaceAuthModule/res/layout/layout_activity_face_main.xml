@@ -6,7 +6,7 @@
 
     <Button
         android:id="@+id/button_record_data"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/trigger_training" />
 
@@ -24,19 +24,19 @@
 
     <Button
         android:id="@+id/button_test_authentication"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/test_face_authentication" />
 
     <Button
         android:id="@+id/button_manage_data"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/manage_face_data" />
 
     <Button
         android:id="@+id/button_settings"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/trigger_settings" />
 

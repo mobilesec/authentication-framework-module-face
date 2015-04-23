@@ -16,5 +16,12 @@
     <style name="AppTheme" parent="AppBaseTheme">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
+    
+    <!-- separator line, see http://stackoverflow.com/questions/5049852/android-drawing-separator-divider-line-in-layout -->
+    <style name="Separator">
+	    <item name="android:layout_width">match_parent</item>
+	    <item name="android:layout_height">1dp</item>
+	    <item name="android:background">?android:attr/listDivider</item>
+	</style>
 
 </resources>

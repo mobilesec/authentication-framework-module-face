@@ -39,12 +39,12 @@
     <string name="most_likely_user_svm">Most likely user: %1$s (probability %2$1.2f)</string>
     <string name="most_likely_user_knn">Most likely user: %1$s (%2$d votes)</string>
     <string name="use_image_energy_normalization">Use image energy normalization</string>
-    <string name="image_energy_normalization_kernel_subsamling">Image energy normalization: kernel subsampling factor:</string>
-    <string name="knn_k">KNN: the K parameter:</string>
+    <string name="image_energy_normalization_kernel_subsamling">Image energy normalization: kernel subsampling factor</string>
+    <string name="knn_k">KNN: the K parameter</string>
     <string name="use_pca">Use PCA feature transform</string>
     <string name="radiobutton_knn">KNN</string>
     <string name="radiobutton_svm">SVM</string>
-    <string name="classifier_type">Changing these settings requires the classifiers to be retrained! Do so by starting classifier training after leaving settings.\n\nClassifier type</string>
+    <string name="classifier_type">Classifier type</string>
     <string name="face_size">Resized face width/height [px]</string>
     <string name="pca_features">Amount of PCA features</string>
     <string name="no_faces_detected">No faces detected.</string>
@@ -81,6 +81,9 @@
     <string name="market_not_installed">Google Play is not installed, cannot download and install other apps.</string>
     <string name="filemanager_package_name">org.openintents.filemanager</string>
     <string name="no_faces_detected_please_try_again">No faces detected, please try again</string>
-    <string name="use_fronal_only">Use fronal face images only in training data recording, classifier training and authentication (off means we use complete panshot data instead)</string>    
+    <string name="use_fronal_only">Use fronal face images only in data recording, classifier training and authentication (off means we use complete panshot data instead)</string>
+    <string name="changing_setting_requires_retraining">Changing these settings requires the classifiers to be retrained! Do so by starting classifier training after leaving settings.</string>
+    <string name="face_data_settings">\nFace data settings</string>    
+    <string name="face_recognition_settings">\nFace recognition setting</string>    
     
 </resources>
