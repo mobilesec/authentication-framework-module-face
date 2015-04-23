@@ -175,13 +175,15 @@ public class RecognitionModule implements Serializable {
 	 * Loads and caches training data. Necessary before calling training.
 	 * 
 	 * @param _context
-	 * @param _angleDiffOfPhotos
+	 * @param _angleBetweenPerspectives
 	 * @param _minAmountImagesPerSubjectAndClassifier
+	 * @param _useFronalOnly
 	 */
-	public void loadTrainingData(final Context _context, float _angleDiffOfPhotos, int _minAmountImagesPerSubjectAndClassifier) {
+	public void loadTrainingData(final Context _context, float _angleBetweenPerspectives, int _minAmountImagesPerSubjectAndClassifier,
+			boolean _useFronalOnly) {
 		// load training data
 		Log.d(TAG, "loading training panshot images...");
-		List<PanshotImage> trainingPanshotImages = DataUtil.loadTrainingData(_context);
+		List<PanshotImage> trainingPanshotImages = DataUtil.loadTrainingData(_context, _useFronalOnly, _angleBetweenPerspectives);
 		// do image energy normalisation
 		if (SharedPrefs.useImageEnergyNormlization(_context)) {
 			final float subsamplingFactor = SharedPrefs.getImageEnergyNormalizationSubsamplingFactor(_context);
@@ -205,7 +207,7 @@ public class RecognitionModule implements Serializable {
 		Map<GenericTuple2<String, Integer>, Integer> imageAmount = new HashMap<GenericTuple2<String, Integer>, Integer>();
 		for (PanshotImage image : trainingPanshotImages) {
 			int classifierIndex = RecognitionModule.getClassifierIndexForAngle(image.angleValues[image.rec.angleIndex],
-					_angleDiffOfPhotos);
+					_angleBetweenPerspectives);
 			if (!trainingdataPerClassifier.containsKey(classifierIndex)) {
 				trainingdataPerClassifier.put(classifierIndex, new TrainingData());
 			}

@@ -52,7 +52,8 @@ public class TrainingService extends IntentService {
 		int minAmountOfTrainingImagesPerSubjectAntClassifier = SharedPrefs
 				.getMinAmountOfTrainingImagesPerSubjectAntClassifier(this);
 		RecognitionModule recognitionModule = new RecognitionModule();
-		recognitionModule.loadTrainingData(this, angleBetweenClassifiers, minAmountOfTrainingImagesPerSubjectAntClassifier);
+		recognitionModule.loadTrainingData(this, angleBetweenClassifiers, minAmountOfTrainingImagesPerSubjectAntClassifier,
+				SharedPrefs.isFrontalOnly(this));
 
 		// do not have enough training data, notify and abort
 		GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> isEnoughTrainingDataPerPerspective = recognitionModule

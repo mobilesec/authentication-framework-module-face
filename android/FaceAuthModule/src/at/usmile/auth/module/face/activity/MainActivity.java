@@ -152,7 +152,8 @@ public class MainActivity extends Activity {
 										.getMinAmountOfTrainingImagesPerSubjectAntClassifier(MainActivity.this);
 								RecognitionModule recognitionModule = new RecognitionModule();
 								recognitionModule.loadTrainingData(MainActivity.this, angleBetweenClassifiers,
-										minAmountOfTrainingImagesPerSubjectAntClassifier);
+										minAmountOfTrainingImagesPerSubjectAntClassifier,
+										SharedPrefs.isFrontalOnly(MainActivity.this));
 								GenericTuple2<Boolean, Map<GenericTuple2<String, Integer>, Integer>> isEnoughTrainingDataPerPerspective = recognitionModule
 										.isEnoughTrainingDataPerPerspective(MainActivity.this,
 												minAmountOfTrainingImagesPerSubjectAntClassifier);

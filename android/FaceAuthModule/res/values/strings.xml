@@ -81,6 +81,6 @@
     <string name="market_not_installed">Google Play is not installed, cannot download and install other apps.</string>
     <string name="filemanager_package_name">org.openintents.filemanager</string>
     <string name="no_faces_detected_please_try_again">No faces detected, please try again</string>
-    <string name="use_fronal_only">Use fronal face images only</string>    
+    <string name="use_fronal_only">Use fronal face images only in training data recording, classifier training and authentication (off means we use complete panshot data instead)</string>    
     
 </resources>

@@ -110,7 +110,7 @@ public abstract class SharedPrefs {
 
 	public static boolean usePca(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getBoolean(
-				SharedPrefs.USE_PCA, false);
+				SharedPrefs.USE_PCA, true);
 	}
 
 	public static int getAmountOfPcaFeatures(Context _context) {
@@ -151,6 +151,6 @@ public abstract class SharedPrefs {
 
 	public static boolean isFrontalOnly(Context _context) {
 		return _context.getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).getBoolean(
-				SharedPrefs.USE_FRONTAL_ONLY, false);
+				SharedPrefs.USE_FRONTAL_ONLY, true);
 	}
 }

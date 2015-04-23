@@ -15,6 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -269,7 +270,7 @@ public class DataUtil {
 		}
 	}
 
-	public static List<PanshotImage> loadTrainingData(Context _context) {
+	public static List<PanshotImage> loadTrainingData(Context _context, boolean _useFrontalOnly, float _angleBetweenPerspectives) {
 		// store images to sd card
 		if (!isSdCardAvailableRW()) {
 			Toast.makeText(_context, _context.getResources().getString(R.string.sd_card_not_available), Toast.LENGTH_SHORT)
@@ -354,13 +355,23 @@ public class DataUtil {
 				for (File image : images) {
 					int imageNr = Integer.parseInt(image.getName().replaceAll(".jpg", "").split("_")[3]);
 					PanshotImage panshotImage = panshotimagesOfThisPanshot.get(imageNr);
+					panshotImage.angleValues[angleIndex] -= angleNormalizer;
+					// if we use fronal only: only load is image is
+					// "frontal enough"
+					if (_useFrontalOnly) {
+						if (Math.abs(panshotImage.angleValues[angleIndex]) > _angleBetweenPerspectives / 2.0f) {
+							// image is not frontal
+							Log.d(TAG, "skipping image for angle " + Arrays.toString(panshotImage.angleValues)
+									+ " as it is not frontal (we use frontal only)");
+							continue;
+						}
+					}
 					Mat face = Highgui.imread(image.getAbsolutePath());
 					// convert to 1 channel = gray
 					Mat tmp = new Mat(face.rows(), face.cols(), face.type());
 					Imgproc.cvtColor(face, tmp, Imgproc.COLOR_RGBA2GRAY);
 					face = tmp;
 					panshotImage.grayFace = face;
-					panshotImage.angleValues[angleIndex] -= angleNormalizer;
 					panshotImage.rec.angleIndex = angleIndex;
 					LOGGER.debug("loaded image has channels=" + panshotImage.grayFace.channels() + ", depth="
 							+ panshotImage.grayFace.depth() + ", type=" + panshotImage.grayFace.type());
