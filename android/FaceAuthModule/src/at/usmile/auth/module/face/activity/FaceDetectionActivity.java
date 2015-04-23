@@ -496,7 +496,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	@Override
 	protected void onResume() {
 		super.onResume();
-		Log.d(OldMainActivity.class.getSimpleName(), "onResume()");
+		Log.d(FaceDetectionActivity.class.getSimpleName(), "onResume()");
 
 		// create sensor stuff
 		SensorComponent.init(this);
@@ -523,7 +523,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 		switch (_keyCode) {
 			case KeyEvent.KEYCODE_VOLUME_DOWN:
 			case KeyEvent.KEYCODE_VOLUME_UP:
-				Log.d(OldMainActivity.class.getSimpleName(), "keyodwn: vol down/up detected");
+				Log.d(FaceDetectionActivity.class.getSimpleName(), "keyodwn: vol down/up detected");
 				toggleRecording();
 				return true;
 		}
@@ -634,7 +634,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	}
 
 	private void stopTakingPictures() {
-		Log.d(OldMainActivity.class.getSimpleName(), "stopping image taking. we recorded " + mImages.size() + " images.");
+		Log.d(FaceDetectionActivity.class.getSimpleName(), "stopping image taking. we recorded " + mImages.size() + " images.");
 		mIsTakingPictures = false;
 		SensorComponent.instance().stop();
 		if (!SharedPrefs.isFrontalOnly(this)) {

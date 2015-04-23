@@ -1,7 +1,6 @@
 package at.usmile.panshot;
 
 import android.content.Context;
-import at.usmile.auth.module.face.activity.OldMainActivity.RecognitionType;
 
 /**
  * Provides access to shared preferences
@@ -21,6 +20,17 @@ public abstract class SharedPrefs {
 	// getActivity().getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID,
 	// Context.MODE_PRIVATE).edit()
 	// .putBoolean(SharedPrefs.USE_ENERGY_NORMALIZATION, _isChecked).commit();
+
+	// ==============================================================================================================
+	// STATICS
+
+	/**
+	 * States which recognitions are possible for a) creating+training
+	 * classifiers from FS-data and b) classifying new pan shot input.
+	 */
+	public static enum RecognitionType {
+		SVM, KNN
+	}
 
 	// ==============================================================================================================
 	// SHARED PREFERENCE STRINGS

@@ -38,7 +38,6 @@ import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
 import at.usmile.auth.module.face.R;
-import at.usmile.auth.module.face.activity.OldMainActivity;
 import at.usmile.panshot.PanshotImage;
 import at.usmile.panshot.User;
 import at.usmile.panshot.exception.SdCardNotAvailableException;
@@ -130,7 +129,7 @@ public class DataUtil {
 					Toast.LENGTH_LONG).show();
 			return;
 		}
-		Log.d(OldMainActivity.class.getSimpleName(), "mediaDir=" + mediaDir.getAbsolutePath());
+		Log.d(TAG, "mediaDir=" + mediaDir.getAbsolutePath());
 		// ensure access to user's directory
 		File userDir = null;
 		User user = _currentUser;

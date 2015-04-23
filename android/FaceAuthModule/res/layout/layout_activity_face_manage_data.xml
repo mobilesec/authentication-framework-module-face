@@ -28,6 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_below="@+id/textview_manage_data_with_fsm"
+            android:drawableLeft="@android:drawable/ic_menu_manage"
             android:text="@string/manage_data_using_fsm" />
 
         <TextView
