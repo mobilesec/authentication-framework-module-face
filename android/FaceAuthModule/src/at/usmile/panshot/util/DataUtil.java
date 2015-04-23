@@ -106,8 +106,7 @@ public class DataUtil {
 	}
 
 	public static void savePanshotImages(Context _context, User _currentUser, List<PanshotImage> _images,
-			int _angleArrayUsedIndex, String csvFileExtension, String _sessionId, boolean _useFrontalOnly,
-			float _panshotTargetMinAngle) {
+			String csvFileExtension, String _sessionId, boolean _useFrontalOnly, float _panshotTargetMinAngle) {
 		// store images to sd card
 		if (!isSdCardAvailableRW()) {
 			Toast.makeText(_context, _context.getResources().getString(R.string.sd_card_not_available), Toast.LENGTH_SHORT)
@@ -159,11 +158,11 @@ public class DataUtil {
 		float maxAngle = -Float.MAX_VALUE;
 		for (int imageNr = 0; imageNr < _images.size(); imageNr++) {
 			PanshotImage image = _images.get(imageNr);
-			if (minAngle > image.angleValues[_angleArrayUsedIndex]) {
-				minAngle = image.angleValues[_angleArrayUsedIndex];
+			if (minAngle > image.angleValues[image.rec.angleIndex]) {
+				minAngle = image.angleValues[image.rec.angleIndex];
 			}
-			if (maxAngle < image.angleValues[_angleArrayUsedIndex]) {
-				maxAngle = image.angleValues[_angleArrayUsedIndex];
+			if (maxAngle < image.angleValues[image.rec.angleIndex]) {
+				maxAngle = image.angleValues[image.rec.angleIndex];
 			}
 			LOGGER.debug("image " + imageNr + ": " + image.toString() + " has channels=" + image.grayImage.channels()
 					+ ", depth=" + image.grayImage.depth() + ", type=" + image.grayImage.type());

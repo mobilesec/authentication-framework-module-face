@@ -127,17 +127,12 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	/** SW version */
 	public static final String SESSION_ID = "01";
 
-	// TODO extract these to sharedprefs
-
-	private static final float PANSHOT_TARGET_MIN_ANGLE = (float) (Math.PI * 170.0f / 180.0f);
-
 	private static final String CSV_FILENAME_EXTENSION = ".csv.jpg";
 
 	/**
 	 * BAD: hard coded index of angle values in angle array (we are only looking
 	 * at one axis here).
 	 */
-	private static final int ANGLE_INDEX = 0;
 
 	// ================================================================================================================
 	// CAMVIEW MEMBERS
@@ -847,7 +842,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 
 					case RECORD_DATA:
 						// save images
-						DataUtil.savePanshotImages(this, mCurrentUser, mImages, ANGLE_INDEX, CSV_FILENAME_EXTENSION, SESSION_ID,
+						DataUtil.savePanshotImages(this, mCurrentUser, mImages, CSV_FILENAME_EXTENSION, SESSION_ID,
 								SharedPrefs.isFrontalOnly(this), SharedPrefs.getAngleBetweenClassifiers(this));
 						break;
 
