@@ -24,8 +24,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CascadeClassifier;
 import org.opencv.samples.facedetect.DetectionBasedTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -79,13 +77,9 @@ import at.usmile.tuple.GenericTuple3;
  */
 public class FaceDetectionActivity extends Activity implements CvCameraViewListener2 {
 
-	// TODO replace all by LOGGER or kick logger
-
 	// ================================================================================================================
 	// MEMBERS
-	// private final String TAG = "FaceRecognitionActivity";
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(FaceDetectionActivity.class);
+	private final String TAG = FaceDetectionActivity.class.getSimpleName();
 
 	private static enum FaceDetectionPurpose {
 		RECORD_DATA, RECOGNITION_TEST, AUTHENTICATION
@@ -98,7 +92,6 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	private FaceDetectionPurpose mFaceDetectionPurpose = FaceDetectionPurpose.RECORD_DATA;
 
 	// OpenCV settings
-	private static final String TAG = FaceDetectionActivity.class.getSimpleName();
 	private static final Scalar FACE_RECT_COLOR = new Scalar(0, 255, 0, 255);
 	public static final int JAVA_DETECTOR = 0;
 	public static final int NATIVE_DETECTOR = 1;
@@ -164,7 +157,7 @@ public class FaceDetectionActivity extends Activity implements CvCameraViewListe
 	private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
 		@Override
 		public void onManagerConnected(int status) {
-			LOGGER.info("BaseLoaderCallback.onManagerConnected()");
+			Log.i(TAG, "BaseLoaderCallback.onManagerConnected()");
 			switch (status) {
 				case LoaderCallbackInterface.SUCCESS: {
 					Log.i(TAG, "OpenCV loaded successfully");

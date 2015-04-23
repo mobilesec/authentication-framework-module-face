@@ -26,8 +26,6 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.highgui.Highgui;
 import org.opencv.imgproc.Imgproc;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import android.content.Context;
 import android.content.res.Resources.NotFoundException;
@@ -50,7 +48,6 @@ import at.usmile.tuple.GenericTuple2;
 import au.com.bytecode.opencsv.CSVReader;
 
 // TODO extract all UI stuff to FaceModuleUtil
-// TODO comments
 
 /**
  * Tool for access to file system stuff (loading and saving face auth. data)
@@ -60,10 +57,13 @@ import au.com.bytecode.opencsv.CSVReader;
  * @version 1
  */
 public class DataUtil {
-	private static final Logger LOGGER = LoggerFactory.getLogger(DataUtil.class);
 
 	private static final String TAG = DataUtil.class.getSimpleName();
 
+	/**
+	 * in our panshot data folder: filters for dirctories that contain user
+	 * (class) face data.
+	 */
 	protected static FileFilter PANSHOT_USER_FOLDER_FILE_FILTER = new FileFilter() {
 		@Override
 		public boolean accept(File file) {
@@ -72,20 +72,28 @@ public class DataUtil {
 		}
 	};
 
-	public static User getUserForName(Context _context, String name) throws NotFoundException, IOException {
-		for (User u : loadExistingUsers(_context)) {
-			if (u.getName().equalsIgnoreCase(name)) {
-				return u;
-			}
-		}
-		throw new RuntimeException(name + ": no such user.");
-	}
-
+	/**
+	 * Creates a new user object that can e.g. be connected to newly recorded
+	 * face data. just by this generation the user does not get connected to
+	 * anything - we just create the user object here.
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static User createNewUser(String name) {
 		String id = Long.toString(Math.abs(new Random(System.currentTimeMillis()).nextLong()));
 		return new User(id, name);
 	}
 
+	/**
+	 * Load existing users based on user data stored on the file system (no
+	 * authentication data is loaded).
+	 * 
+	 * @param _context
+	 * @return
+	 * @throws NotFoundException
+	 * @throws IOException
+	 */
 	public static List<User> loadExistingUsers(Context _context) throws NotFoundException, IOException {
 		if (!isSdCardAvailableRW()) {
 			throw new SdCardNotAvailableException();
@@ -105,6 +113,17 @@ public class DataUtil {
 		return list;
 	}
 
+	/**
+	 * Save the given panshot images to the FS.
+	 * 
+	 * @param _context
+	 * @param _currentUser
+	 * @param _images
+	 * @param csvFileExtension
+	 * @param _sessionId
+	 * @param _useFrontalOnly
+	 * @param _panshotTargetMinAngle
+	 */
 	public static void savePanshotImages(Context _context, User _currentUser, List<PanshotImage> _images,
 			String csvFileExtension, String _sessionId, boolean _useFrontalOnly, float _panshotTargetMinAngle) {
 		// store images to sd card
@@ -164,8 +183,8 @@ public class DataUtil {
 			if (maxAngle < image.angleValues[image.rec.angleIndex]) {
 				maxAngle = image.angleValues[image.rec.angleIndex];
 			}
-			LOGGER.debug("image " + imageNr + ": " + image.toString() + " has channels=" + image.grayImage.channels()
-					+ ", depth=" + image.grayImage.depth() + ", type=" + image.grayImage.type());
+			Log.d(TAG, "image " + imageNr + ": " + image.toString() + " has channels=" + image.grayImage.channels() + ", depth="
+					+ image.grayImage.depth() + ", type=" + image.grayImage.type());
 			String imageNrString = "" + imageNr;
 			String filename = "" + user.getId() + "_" + timestamp + "_"
 					+ ("00" + imageNrString).substring(imageNrString.length());
@@ -268,6 +287,15 @@ public class DataUtil {
 		}
 	}
 
+	/**
+	 * Loads training data from the FS. this contains: all face images and
+	 * correlated sensor data and users.
+	 * 
+	 * @param _context
+	 * @param _useFrontalOnly
+	 * @param _angleBetweenPerspectives
+	 * @return
+	 */
 	public static List<PanshotImage> loadTrainingData(Context _context, boolean _useFrontalOnly, float _angleBetweenPerspectives) {
 		// store images to sd card
 		if (!isSdCardAvailableRW()) {
@@ -338,7 +366,7 @@ public class DataUtil {
 							angleValues);
 					angleIndex = angleIndexNormaliser.value1;
 					angleNormalizer = angleIndexNormaliser.value2[angleIndex];
-					LOGGER.debug("angleIndex=" + angleIndex + ", angleNormalizer=" + angleNormalizer);
+					Log.d(TAG, "angleIndex=" + angleIndex + ", angleNormalizer=" + angleNormalizer);
 				} catch (IOException e) {
 					e.printStackTrace();
 					return null;
@@ -371,7 +399,7 @@ public class DataUtil {
 					face = tmp;
 					panshotImage.grayFace = face;
 					panshotImage.rec.angleIndex = angleIndex;
-					LOGGER.debug("loaded image has channels=" + panshotImage.grayFace.channels() + ", depth="
+					Log.d(TAG, "loaded image has channels=" + panshotImage.grayFace.channels() + ", depth="
 							+ panshotImage.grayFace.depth() + ", type=" + panshotImage.grayFace.type());
 					panshotImages.add(panshotImage);
 				}
@@ -380,6 +408,16 @@ public class DataUtil {
 		return panshotImages;
 	}
 
+	/**
+	 * Serialize a {@link RecognitionModule} to the given file. Attention: not
+	 * all SVM data can be serialized (LibSVM provides its own load and save
+	 * method for trained SVM modules - you have to call these for each
+	 * {@link SvmClassifier} yourself.
+	 * 
+	 * @param _directory
+	 * @param _recognitionModule
+	 * @throws IOException
+	 */
 	public static void serializeRecognitionModule(File _directory, RecognitionModule _recognitionModule) throws IOException {
 		ObjectOutputStream objectOutputStream = null;
 		if (!_directory.exists()) {
@@ -406,6 +444,19 @@ public class DataUtil {
 		}
 	}
 
+	/**
+	 * 
+	 * Deserialize a {@link RecognitionModule} from the given file. Attention:
+	 * not all SVM data can be serialized (LibSVM provides its own load and save
+	 * method for trained SVM modules - you have to call these for each
+	 * {@link SvmClassifier} yourself.
+	 * 
+	 * @param _directory
+	 * @return
+	 * @throws NotFoundException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
 	public static RecognitionModule deserializeRecognitiosModule(File _directory) throws NotFoundException, IOException,
 			ClassNotFoundException {
 		ObjectInputStream objectInputStream = null;
@@ -444,13 +495,21 @@ public class DataUtil {
 		return false;
 	}
 
+	/**
+	 * Get the application's medie storage folder (create it if it does not
+	 * exist).
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
 	public static File getMediaStorageDirectory(String name) throws IOException {
 		// This location works best if you want the created images to be shared
 		// between applications and persist after your app has been uninstalled.
 		File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM), name);
 		// Create the storage directory if it does not exist
 		if (!mediaStorageDir.exists()) {
-			LOGGER.info("getMediaStorageDirectory(): creating directory " + mediaStorageDir.getAbsolutePath());
+			Log.i(TAG, "getMediaStorageDirectory(): creating directory " + mediaStorageDir.getAbsolutePath());
 			if (!mediaStorageDir.mkdirs()) {
 				throw new IOException("Unable to create directory: " + mediaStorageDir);
 			}
@@ -461,7 +520,7 @@ public class DataUtil {
 	public static File ensureDirectoryExists(File parent, String name) throws IOException {
 		File dir = new File(parent.getAbsolutePath() + "/" + name);
 		if (!dir.exists()) {
-			LOGGER.info("ensureDirectoryExists(): creating directory " + dir.getAbsolutePath());
+			Log.i(TAG, "ensureDirectoryExists(): creating directory " + dir.getAbsolutePath());
 			if (!dir.mkdirs()) {
 				throw new IOException("Unable to create directory: " + dir);
 			}
@@ -469,12 +528,26 @@ public class DataUtil {
 		return dir;
 	}
 
+	/**
+	 * Save an Android-Yuv image to a jpg file.
+	 * 
+	 * @param file
+	 * @param image
+	 * @throws IOException
+	 */
 	public static void saveYuvImageToJpgFile(File file, YuvImage image) throws IOException {
 		FileOutputStream filecon = new FileOutputStream(file);
 		image.compressToJpeg(new Rect(0, 0, image.getWidth(), image.getHeight()), 90, filecon);
 		filecon.close();
 	}
 
+	/**
+	 * Save a OpenCV mat to a png file.
+	 * 
+	 * @param file
+	 * @param matWithFace
+	 * @throws IOException
+	 */
 	public static void saveMatToJpgFile(File file, Mat matWithFace) throws IOException {
 		Bitmap bitmap = Bitmap.createBitmap(matWithFace.cols(), matWithFace.rows(), Bitmap.Config.ARGB_8888);
 		Utils.matToBitmap(matWithFace, bitmap);
@@ -492,15 +565,15 @@ public class DataUtil {
 	 */
 	public static void saveBitmapToFs(Bitmap _b, String _folderPath, String _filename) {
 		try {
-			LOGGER.debug("trying to save bitmap to " + _folderPath + "/" + _filename);
+			Log.d(TAG, "trying to save bitmap to " + _folderPath + "/" + _filename);
 			File folder = new File(_folderPath);
 			folder.mkdirs();
 
 			FileOutputStream out = new FileOutputStream(_folderPath + "/" + _filename);
 			_b.compress(Bitmap.CompressFormat.PNG, 90, out);
-			LOGGER.debug("saving bitmap done.");
+			Log.d(TAG, "saving bitmap done.");
 		} catch (Exception e) {
-			LOGGER.warn("saving bitmap failed.");
+			Log.w(TAG, "saving bitmap failed.");
 			e.printStackTrace();
 		}
 	}

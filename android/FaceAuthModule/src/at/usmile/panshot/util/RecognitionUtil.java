@@ -13,12 +13,6 @@ import org.opencv.core.Mat;
  */
 public class RecognitionUtil {
 
-	// ================================================================================================================
-	// MEMBERS
-
-	// ================================================================================================================
-	// METHODS
-
 	private static final String TAG = RecognitionUtil.class.getSimpleName();
 
 	/**

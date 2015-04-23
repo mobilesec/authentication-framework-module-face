@@ -3,26 +3,26 @@ package at.usmile.panshot.sensor;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 /**
- * Manages all sensor stuff we need. Current sensor values can be read out via {@link #getSensorValues()}, listeners to sensor
- * updates can be attached via {@link #addObserver(java.util.Observer)}, their {@link Observer#update(Observable, Object)} gets
- * passed an instance of {@link SensorValues}.
+ * Manages all sensor stuff we need. Current sensor values can be read out via
+ * {@link #getSensorValues()}, listeners to sensor updates can be attached via
+ * {@link #addObserver(java.util.Observer)}, their
+ * {@link Observer#update(Observable, Object)} gets passed an instance of
+ * {@link SensorValues}.
  * 
  * @author Rainhard Findling
  * @date 12.01.2012
  * @version 1
  */
 public class SensorComponent extends Observable implements SensorEventListener {
-	private Logger LOGGER = LoggerFactory.getLogger(SensorComponent.class);
+	private static final String TAG = SensorComponent.class.getSimpleName();
 
 	// ================================================================================================================
 	// MEMBERS
@@ -68,8 +68,8 @@ public class SensorComponent extends Observable implements SensorEventListener {
 	// METHODS
 
 	/**
-	 * Tells the SensorComponent to listen for hw-sensor updates from now on. You will most certainly like to call this in
-	 * Context.onResume().
+	 * Tells the SensorComponent to listen for hw-sensor updates from now on.
+	 * You will most certainly like to call this in Context.onResume().
 	 * 
 	 * @return true, if starting to listening for hw-sensor-updates was okay.
 	 */
@@ -77,7 +77,7 @@ public class SensorComponent extends Observable implements SensorEventListener {
 		// reset sensor values
 		mSensorValues = new SensorValues();
 		// register listener
-		LOGGER.debug("starting listening for sensor changes...");
+		Log.d(TAG, "starting listening for sensor changes...");
 		if (!mSensorManager.registerListener(this, mSensorGyroscope, SensorManager.SENSOR_DELAY_GAME)) {
 			throw new RuntimeException("failed to start gyroscope sensor updates");
 		}
@@ -90,11 +90,11 @@ public class SensorComponent extends Observable implements SensorEventListener {
 	}
 
 	/**
-	 * Tells the SensorComponent to stop listening for hw-sensor-updates from now on. You will most certainly like to call this in
-	 * Context.onPause().
+	 * Tells the SensorComponent to stop listening for hw-sensor-updates from
+	 * now on. You will most certainly like to call this in Context.onPause().
 	 */
 	public void stop() {
-		LOGGER.debug("stopping listening for sensor changes...");
+		Log.d(TAG, "stopping listening for sensor changes...");
 		// unregister listener
 		mSensorManager.unregisterListener(this);
 	}
@@ -109,7 +109,7 @@ public class SensorComponent extends Observable implements SensorEventListener {
 
 	@Override
 	public void onAccuracyChanged(Sensor _sensor, int _accuracy) {
-		LOGGER.debug("onAccuracyChanged()");
+		Log.d(TAG, "onAccuracyChanged()");
 	}
 
 	@Override
@@ -135,8 +135,10 @@ public class SensorComponent extends Observable implements SensorEventListener {
 	// GETTER / SETTER
 
 	/**
-	 * If the corresponding {@link SensorComponent} is still active, the SensorValues will be updated periodically (until the
-	 * {@link SensorComponent} gets stopped and started again, which causes the SensorValues will be decoupled).
+	 * If the corresponding {@link SensorComponent} is still active, the
+	 * SensorValues will be updated periodically (until the
+	 * {@link SensorComponent} gets stopped and started again, which causes the
+	 * SensorValues will be decoupled).
 	 * 
 	 * @return {@link #mSensorValues}.
 	 */

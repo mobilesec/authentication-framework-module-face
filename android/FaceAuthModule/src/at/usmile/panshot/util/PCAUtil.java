@@ -23,12 +23,6 @@ import at.usmile.tuple.GenericTuple3;
  */
 public class PCAUtil {
 
-	// ================================================================================================================
-	// MEMBERS
-
-	// ================================================================================================================
-	// METHODS
-
 	/**
 	 * PCA transformation of pan shot images. the indexing of images and pca
 	 * transformed features is the same (e.g. image nr 1 in _images corresponds

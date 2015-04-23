@@ -326,8 +326,15 @@ public class MainActivity extends Activity {
 	protected void onActivityResult(int _requestCode, int _resultCode, Intent _data) {
 		switch (_requestCode) {
 			case REQUEST_CODE_MANAGE_DATA:
-				Log.d(TAG, "onActivityResult#requestCodeManageData");
-				// TODO
+				Log.d(TAG, "onActivityResult#REQUEST_CODE_MANAGE_DATA");
+				break;
+
+			case REQUEST_CODE_FACE_DETECTION:
+				Log.d(TAG, "onActivityResult#REQUEST_CODE_FACE_DETECTION");
+				break;
+
+			case REQUEST_CODE_SETTINGS:
+				Log.d(TAG, "onActivityResult#REQUEST_CODE_SETTINGS");
 				break;
 
 			default:

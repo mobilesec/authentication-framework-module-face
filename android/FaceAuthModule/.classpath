@@ -5,7 +5,6 @@
 	<classpathentry excluding="at/fhooe/facelogin/recognition/|at/usmile/panshot/LBPFaceRecognizer.java|at/usmile/panshot/FaceRec.java|at/usmile/auth/module/face/FaceRec.java" kind="src" path="src"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="lib" path="libs/guava-15.0.jar"/>
-	<classpathentry kind="lib" path="libs/slf4j-android-1.6.1-RC1.jar"/>
 	<classpathentry kind="lib" path="libs/opencsv-2.3.jar"/>
 	<classpathentry kind="lib" path="libs/libsvm.jar"/>
 	<classpathentry kind="src" path="gen"/>

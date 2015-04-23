@@ -25,7 +25,6 @@ import at.usmile.panshot.util.DataUtil;
  * @version 1
  */
 public class SettingsActivity extends Activity {
-	// TODO onChange of certain settings: notify user and delete classifiers
 
 	private final String TAG = "SettingsActivity";
 	/** if we should ask user about really changing settings before doing so. */

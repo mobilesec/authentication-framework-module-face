@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * All least known sensor values.
  * 
@@ -15,17 +12,18 @@ import org.slf4j.LoggerFactory;
  * @version 1
  */
 public class SensorValues {
-	private static final Logger LOGGER = LoggerFactory.getLogger(SensorValues.class);
 
 	// ================================================================================================================
 	// MEMBERS
 
 	/**
-	 * list of past gyro values. needed to integrate over time to get the current rotation within {@link #mCurrentRotation}.
+	 * list of past gyro values. needed to integrate over time to get the
+	 * current rotation within {@link #mCurrentRotation}.
 	 */
 	private List<Observation<Float[]>> mGyroValueHistory = new ArrayList<Observation<Float[]>>();
 	/**
-	 * list of past gyro values. needed to integrate over time to get the current rotation within {@link #mCurrentRotation}.
+	 * list of past gyro values. needed to integrate over time to get the
+	 * current rotation within {@link #mCurrentRotation}.
 	 */
 	private List<Observation<Float[]>> mRotationHistory = new ArrayList<Observation<Float[]>>();
 
@@ -49,7 +47,8 @@ public class SensorValues {
 	 * clear gyro values
 	 */
 	public void reset() {
-		// do not clear lists as somebody else is possibly still using them - create new ones
+		// do not clear lists as somebody else is possibly still using them -
+		// create new ones
 		mGyroValueHistory = new ArrayList<Observation<Float[]>>();
 		mRotationHistory = new ArrayList<Observation<Float[]>>();
 
@@ -98,7 +97,9 @@ public class SensorValues {
 			// - // integrate values to current rotation
 			// - float[] newRotation = new float[mCurrentRotation.length];
 			// - for (int i = 0; i < _values.length; i++) {
-			// - newRotation[i] = mCurrentRotation[i] + (mGyroValueHistory.get(0).value[i] + mGyroValueHistory.get(1).value[i]) /
+			// - newRotation[i] = mCurrentRotation[i] +
+			// (mGyroValueHistory.get(0).value[i] +
+			// mGyroValueHistory.get(1).value[i]) /
 			// 2.0f
 			// - * (timestamp - mLastGyroscopeUpdateTime) / 1000.0f;
 			// - }
@@ -113,7 +114,8 @@ public class SensorValues {
 			Float[] newRotation = new Float[_values.length];
 			Observation<Float[]> gyroLast = mGyroValueHistory.get(mGyroValueHistory.size() - 1);
 			Observation<Float[]> gyroSecondLast = mGyroValueHistory.get(mGyroValueHistory.size() - 2);
-			// if there is no previous rotation, our last rotation is "initial device rotation", which is 0,0,0
+			// if there is no previous rotation, our last rotation is
+			// "initial device rotation", which is 0,0,0
 			Float[] rotationLast = (mRotationHistory.size() == 0) ? new Float[] { 0f, 0f, 0f } : mRotationHistory
 					.get(mRotationHistory.size() - 1).value;
 			for (int i = 0; i < _values.length; i++) {
