@@ -522,4 +522,42 @@ public class DataUtil {
 		writer.flush();
 		writer.close();
 	}
+
+	/**
+	 * Recursively delete a file or folder. Equivalent to unix style rm -r.
+	 * 
+	 * @param fileOrDirectory
+	 * @return
+	 */
+	public static boolean recursiveDelete(File fileOrDirectory) {
+		boolean ok = true;
+		if (fileOrDirectory.isDirectory()) {
+			for (File child : fileOrDirectory.listFiles()) {
+				ok &= recursiveDelete(child);
+			}
+		}
+		return ok & fileOrDirectory.delete();
+	}
+
+	/**
+	 * Delete previously trained and stored classifiers.
+	 * 
+	 * @param _context
+	 */
+	public static void deleteClassifiers(Context _context) {
+		try {
+			File directory = DataUtil.getMediaStorageDirectory(_context.getResources().getString(
+					R.string.app_classifier_directory_name));
+			if (!recursiveDelete(directory.getCanonicalFile())) {
+				Toast.makeText(_context, "Deleting classifiers failed without providing a detailed cause", Toast.LENGTH_LONG)
+						.show();
+			}
+		} catch (NotFoundException e2) {
+			e2.printStackTrace();
+			Toast.makeText(_context, "Deleting classifiers failed: " + e2.toString(), Toast.LENGTH_LONG).show();
+		} catch (IOException e2) {
+			e2.printStackTrace();
+			Toast.makeText(_context, "Deletion classifiers failed: " + e2.toString(), Toast.LENGTH_LONG).show();
+		}
+	}
 }

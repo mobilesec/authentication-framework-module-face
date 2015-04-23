@@ -175,11 +175,11 @@ public class MainActivity extends Activity {
 										DataUtil.serializeRecognitionModule(directory, recognitionModule);
 									} catch (NotFoundException e2) {
 										e2.printStackTrace();
-										Toast.makeText(MainActivity.this, "Storing failed: NotFoundException", Toast.LENGTH_LONG)
+										Toast.makeText(MainActivity.this, "Storing failed: " + e2.toString(), Toast.LENGTH_LONG)
 												.show();
 									} catch (IOException e2) {
 										e2.printStackTrace();
-										Toast.makeText(MainActivity.this, "Storing failed: IOException", Toast.LENGTH_LONG)
+										Toast.makeText(MainActivity.this, "Storing failed: " + e2.toString(), Toast.LENGTH_LONG)
 												.show();
 									}
 									Toast.makeText(MainActivity.this, "Training finished.", Toast.LENGTH_LONG).show();

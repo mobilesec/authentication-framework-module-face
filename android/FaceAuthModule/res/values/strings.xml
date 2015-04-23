@@ -85,5 +85,6 @@
     <string name="changing_setting_requires_retraining">Changing these settings requires the classifiers to be retrained! Do so by starting classifier training after leaving settings.</string>
     <string name="face_data_settings">\nFace data settings</string>    
     <string name="face_recognition_settings">\nFace recognition setting</string>    
+    <string name="really_change_settings">Really change settings? This will delete current classifier data.</string>    
     
 </resources>

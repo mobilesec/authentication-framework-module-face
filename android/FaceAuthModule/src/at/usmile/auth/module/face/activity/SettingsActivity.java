@@ -1,7 +1,9 @@
 package at.usmile.auth.module.face.activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,6 +15,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import at.usmile.auth.module.face.R;
 import at.usmile.panshot.SharedPrefs;
+import at.usmile.panshot.util.DataUtil;
 
 /**
  * Allows user to change some authentication settings.
@@ -23,10 +26,16 @@ import at.usmile.panshot.SharedPrefs;
  */
 public class SettingsActivity extends Activity {
 	// TODO onChange of certain settings: notify user and delete classifiers
-	// TODO think of case in which training is ongoing (lock settings for that
-	// time?)
 
 	private final String TAG = "SettingsActivity";
+	/** if we should ask user about really changing settings before doing so. */
+	private boolean mAskBeforeSettingsChange = true;
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		mAskBeforeSettingsChange = true;
+	}
 
 	@Override
 	protected void onCreate(Bundle _savedInstanceState) {
@@ -50,9 +59,13 @@ public class SettingsActivity extends Activity {
 			@Override
 			public void afterTextChanged(Editable _s) {
 				try {
-					int val = Integer.parseInt(edittextFaceSize.getText().toString());
-					getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-							.putInt(SharedPrefs.FACE_SIZE, val).commit();
+					reallyChangeSettingsDialog(new Runnable() {
+						public void run() {
+							int val = Integer.parseInt(edittextFaceSize.getText().toString());
+							getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+									.putInt(SharedPrefs.FACE_SIZE, val).commit();
+						}
+					});
 				} catch (NumberFormatException e) {
 				} catch (NullPointerException e) {
 				}
@@ -64,10 +77,14 @@ public class SettingsActivity extends Activity {
 		compoundButtonUseFrontalOnly.setChecked(SharedPrefs.isFrontalOnly(this));
 		compoundButtonUseFrontalOnly.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton _buttonView, boolean _isChecked) {
-				Log.d(TAG, "switchUseFrontalOnly#onCheckedChanged(): " + _isChecked);
-				getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-						.putBoolean(SharedPrefs.USE_FRONTAL_ONLY, _isChecked).commit();
+			public void onCheckedChanged(CompoundButton _buttonView, final boolean _isChecked) {
+				reallyChangeSettingsDialog(new Runnable() {
+					public void run() {
+						Log.d(TAG, "switchUseFrontalOnly#onCheckedChanged(): " + _isChecked);
+						getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+								.putBoolean(SharedPrefs.USE_FRONTAL_ONLY, _isChecked).commit();
+					}
+				});
 			}
 		});
 
@@ -87,9 +104,13 @@ public class SettingsActivity extends Activity {
 			@Override
 			public void afterTextChanged(Editable _s) {
 				try {
-					int val = Integer.parseInt(edittextKnnK.getText().toString());
-					getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-							.putInt(SharedPrefs.KNN_K, val).commit();
+					reallyChangeSettingsDialog(new Runnable() {
+						public void run() {
+							int val = Integer.parseInt(edittextKnnK.getText().toString());
+							getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+									.putInt(SharedPrefs.KNN_K, val).commit();
+						}
+					});
 				} catch (NumberFormatException e) {
 				} catch (NullPointerException e) {
 				}
@@ -103,11 +124,15 @@ public class SettingsActivity extends Activity {
 		radiobuttonKnn.setChecked(SharedPrefs.useKnn(this));
 		radiobuttonSvm.setChecked(!SharedPrefs.useKnn(this));
 		rGroupClassifierType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-			public void onCheckedChanged(RadioGroup rGroup, int checkedId) {
-				RadioButton checkedRadioButton = (RadioButton) rGroup.findViewById(checkedId);
-				getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-						.putBoolean(SharedPrefs.USE_CLASSIFIER_TYPE_KNN, checkedRadioButton == radiobuttonKnn).commit();
-				edittextKnnK.setEnabled(checkedRadioButton == radiobuttonKnn);
+			public void onCheckedChanged(final RadioGroup rGroup, final int checkedId) {
+				reallyChangeSettingsDialog(new Runnable() {
+					public void run() {
+						RadioButton checkedRadioButton = (RadioButton) rGroup.findViewById(checkedId);
+						getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+								.putBoolean(SharedPrefs.USE_CLASSIFIER_TYPE_KNN, checkedRadioButton == radiobuttonKnn).commit();
+						edittextKnnK.setEnabled(checkedRadioButton == radiobuttonKnn);
+					}
+				});
 			}
 		});
 
@@ -128,9 +153,14 @@ public class SettingsActivity extends Activity {
 			@Override
 			public void afterTextChanged(Editable _s) {
 				try {
-					float factor = Float.parseFloat(edittextEnergyNormalizationKernelSubsamplingFactor.getText().toString());
-					getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-							.putFloat(SharedPrefs.ENERGY_NORMALIZATION_KERNEL_SUBSAMPLING_FACTOR, factor).commit();
+					reallyChangeSettingsDialog(new Runnable() {
+						public void run() {
+							float factor = Float.parseFloat(edittextEnergyNormalizationKernelSubsamplingFactor.getText()
+									.toString());
+							getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+									.putFloat(SharedPrefs.ENERGY_NORMALIZATION_KERNEL_SUBSAMPLING_FACTOR, factor).commit();
+						}
+					});
 				} catch (NumberFormatException e) {
 				} catch (NullPointerException e) {
 				}
@@ -142,10 +172,14 @@ public class SettingsActivity extends Activity {
 		compoundButtonUseImageEnergyNormalization.setChecked(SharedPrefs.useImageEnergyNormlization(this));
 		compoundButtonUseImageEnergyNormalization.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton _buttonView, boolean _isChecked) {
-				getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-						.putBoolean(SharedPrefs.USE_ENERGY_NORMALIZATION, _isChecked).commit();
-				edittextEnergyNormalizationKernelSubsamplingFactor.setEnabled(_isChecked);
+			public void onCheckedChanged(final CompoundButton _buttonView, final boolean _isChecked) {
+				reallyChangeSettingsDialog(new Runnable() {
+					public void run() {
+						getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+								.putBoolean(SharedPrefs.USE_ENERGY_NORMALIZATION, _isChecked).commit();
+						edittextEnergyNormalizationKernelSubsamplingFactor.setEnabled(_isChecked);
+					}
+				});
 			}
 		});
 
@@ -165,9 +199,13 @@ public class SettingsActivity extends Activity {
 			@Override
 			public void afterTextChanged(Editable _s) {
 				try {
-					int val = Integer.parseInt(edittextPcaFeatures.getText().toString());
-					getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-							.putInt(SharedPrefs.PCA_AMOUNT_OF_FEATURES, val).commit();
+					reallyChangeSettingsDialog(new Runnable() {
+						public void run() {
+							int val = Integer.parseInt(edittextPcaFeatures.getText().toString());
+							getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+									.putInt(SharedPrefs.PCA_AMOUNT_OF_FEATURES, val).commit();
+						}
+					});
 				} catch (NumberFormatException e) {
 				} catch (NullPointerException e) {
 				}
@@ -179,18 +217,50 @@ public class SettingsActivity extends Activity {
 		compoundButtonUsePca.setChecked(SharedPrefs.usePca(this));
 		compoundButtonUsePca.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 			@Override
-			public void onCheckedChanged(CompoundButton _buttonView, boolean _isChecked) {
-				getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
-						.putBoolean(SharedPrefs.USE_PCA, _isChecked).commit();
-				edittextPcaFeatures.setEnabled(_isChecked);
+			public void onCheckedChanged(final CompoundButton _buttonView, final boolean _isChecked) {
+				reallyChangeSettingsDialog(new Runnable() {
+					public void run() {
+						getSharedPreferences(SharedPrefs.SHARED_PREFENCES_ID, Context.MODE_PRIVATE).edit()
+								.putBoolean(SharedPrefs.USE_PCA, _isChecked).commit();
+						edittextPcaFeatures.setEnabled(_isChecked);
+					}
+				});
 			}
 		});
 
 	}
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
+	public void reallyChangeSettingsDialog(final Runnable _r) {
+		if (!mAskBeforeSettingsChange) {
+			_r.run();
+			return;
+		}
+		// "are you sure" dialogue box
+		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				switch (which) {
 
+					case DialogInterface.BUTTON_POSITIVE:
+						Log.d(ManageDataActivity.class.getSimpleName(), "dialogClickListener.YES");
+						// delete classifiers
+						DataUtil.deleteClassifiers(SettingsActivity.this);
+						mAskBeforeSettingsChange = false;
+						// change settings
+						_r.run();
+						break;
+
+					case DialogInterface.BUTTON_NEGATIVE:
+						Log.d(ManageDataActivity.class.getSimpleName(), "dialogClickListener.NO");
+						SettingsActivity.this.finish();
+						break;
+				}
+			}
+
+		};
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(getResources().getString(R.string.really_change_settings))
+				.setPositiveButton(getResources().getString(R.string.yes), dialogClickListener)
+				.setNegativeButton(getResources().getString(R.string.no), dialogClickListener).show();
+	}
 }
