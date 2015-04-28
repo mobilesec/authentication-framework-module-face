@@ -1,0 +1,8 @@
+
+This is the face authentication module for the mobilesec Android authentication framework. It features 2D frontal-only authentication and additionally showcases panshot face authentication. The panshot functionality is based on the discontinued panshot-face-recognition-demo (https://github.com/mobilesec/panshot-face-recognition-demo). Be aware that processing panshot samples takes much longer than processing frontal only images.
+
+The face authentication module was developed for Android 4.4 using OpenCV Android 2.4.10. To build sources corresponding OpenCV sources and the FunUtil project (https://github.com/mobilesec/fun-util) are needed as reference projects. Fetch OpenCV for Android from http://opencv.org/downloads.html and reference the OpenCV Library project for Android (located in sdk/java/) in the prototype settings (located at Properties-Android, in the list of references). To run the apk OpenCV Manager for Android is required to be installed on the device.
+
+For further information on the module, the face recognition prototype and panshot authentication, see http://usmile.at/ and the corresponding master thesis:
+
+Findling, R. D. Pan Shot Face Unlock: Towards Unlocking Personal Mobile Devices using Stereo Vision and Biometric Face Information from multiple Perspectives. Department of Mobile Computing, School of Informatics, Communication and Media, University of Applied Sciences Upper Austria, 2013
